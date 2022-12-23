@@ -1,0 +1,29 @@
+{
+	"care pear": [
+		"care pear",
+		"pear",
+		"pear care",
+		"pear pet",
+		"care pear pet",
+		"pear leash"
+	],
+	"pet frog": [
+		"pet frog",
+		"frog",
+		"frog leash",
+		"pet frog leash",
+		"frog pet"
+	],
+	"pet rock": [
+		"pet rock",
+		"rock",
+		"rock leash",
+		"rock pet"
+	],
+	"pet slime": [
+		"pet slime",
+		"slime leash",
+		"leash slime",
+		"slime pet"
+	]
+}

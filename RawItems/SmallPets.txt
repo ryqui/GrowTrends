@@ -1,0 +1,17 @@
+Pet Slime
+|Slime Leash
+|Leash Slime
+|Slime Pet
+
+Care Pear
+|Pear
+|Pear Care
+|Pear Pet
+|Care Pear Pet
+|Pear Leash
+
+Pet Frog
+|Frog
+|Frog Leash
+|Pet Frog Leash
+|Frog Pet
