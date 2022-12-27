@@ -9,10 +9,11 @@ import difflib
 import numpy as np
 import csv
 
-
+#words that we don't want in our messages
 words_to_avoid = ['all', 'some', 'random', ]
 
-char_to_avoid = [':', ' ', '*', ',', '[', ']', '|', '\\']
+#characters we want to remove from our messages
+char_to_remove = [':', ' ', '*', ',', '[', ']', '|', '\\']
 
 
 def checkCLA(args):
@@ -32,6 +33,13 @@ def checkCLA(args):
 
 
 def scalpMessages(messages):
+    """
+    This funcion will scalp each message looking for an item+price combo using
+    a regular expression. It will save each found item+price along with the
+    type of sale, either buy or sell, in a tuple within a list. This list is
+    then returned.
+    """
+
     #holds valid messages (ones this program can use)
     validMessages = list()
 
@@ -66,7 +74,7 @@ def scalpMessages(messages):
         #result = [(word[0], word[1], word[2].replace(',', '')) for word in result]
         #result = [(word[0], word[1], word[2].replace('*', '')) for word in result]
         for x,word in enumerate(result):
-            for character in char_to_avoid:
+            for character in char_to_remove:
                 result[x] = (result[x][0], result[x][1].replace(character, ''), result[x][2].replace(character, ''))
 
         for word in result[:]:
@@ -98,6 +106,13 @@ def scalpMessages(messages):
 
 
 def getItemNames(itemData):
+    """
+    This funcion goes through the provided item name file and extracts the
+    names and subnames and saves them in 3 different lists:
+      allItemNames - every possible item name and subname
+      subnames - every provided subname
+      validItemNames - only the main item name (without subnames)
+    """
     #holds all possible item names to check for
     allItemNames = []
     validItemNames = []
@@ -114,79 +129,100 @@ def getItemNames(itemData):
         else:
             #if there are subnames, add them in starting with actual name
             for x,value in enumerate(name):
+                #actual item name (main name)
                 if x==0:
                     allItemNames.append(value)
                     validItemNames.append(value)
+
+                #this name is a subname, so add it to a dict as a value to the
+                #main item key
                 else:
                     allItemNames.append(value)
+                    #if main item has already been added, append subname
                     if name[0] in subNames.keys():
                         subNames[name[x]] += name[0]
+
+                    #if this is the first subname, add it as a key with the
+                    #subname as the value
                     else:
                         subNames[name[x]] = name[0]
     return allItemNames, subNames, validItemNames
 
 
 def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
+    """
+    For each valid message (valid price), we will try to find a valid name and
+    append the corresponding price to a dict under this name. If necessary, the
+    algorithm will check each permutation up to a predefined length to try and
+    find the name. It will check for closely matching strings so there may be
+    some uncertainty within the results (although the string must be almost a
+    direct match). 
+    This function returns a sorted dict (itemCount) containing the item names 
+    and prices.
+    """
     itemCount = dict()
     numValidItems = 0
 
+    #split message into individual words
     validItemWords = [word for items in allItemNames for word in items.split()]
-    validItemWords = [word for word in validItemWords if word not in char_to_avoid]
-    #print(validItemWords)
-    #print(allItemNames)
-    #input()
+    #remove words that are character we want to avoid
+    validItemWords = [word for word in validItemWords if word not in char_to_remove]
+
+    #used for printing current message number
     msgNum = 1
     #loop over every valid item and price
     for msg in validMessages:
         print("Current msg:", msgNum,"/",len(validMessages), end='\r', flush=True)
         msgNum += 1
+
         #print(msg)
         #if people not dumb and spelled item name right, add it as valid item
         if msg[0] in allItemNames:
-            #print("Valid name: ", msg[0])
+            #found valid item, add it to itemCount
             numValidItems += 1
 
+            #find main name
             if msg[0] in subNames.keys():
                 currName = subNames[msg[0]]
             else:
                 currName = msg[0]
-            
+
             msg = (currName, msg[1], msg[2])
 
+            #add it to itemCount
             if currName in itemCount.keys():
                 itemCount[currName].append(tuple(msg))
             else:
                 itemCount[currName] = [tuple(msg)]
         else:
-            #if they dumb dumb and spelled it wrong, try to find the valid name in the message
-            #print(msg[0])
-            #print("msg not a valid name. Looking for valid word in: ", msg[0])
+            #if name isn't valid, try to find a valid name in the message
             msgWords = msg[0].split(' ')
+            #remove any blank message or messages with length of 0 or 1
             msgWords = [word for word in msgWords if word and len(word)>1]
             
             #remove any invalid words that aren't part of ANY valid name 
-            #speeds up analysis time by about 400%, but is only 90% as accurate
+            #speeds up analysis time by about 400%, but only finds 90% as much
             if checkOnlyValid:
-                #attempts to find a word from all the valid words that can make up an item from the inputted item names
+                #removes any words that aren't a valid word
                 msgWords = [word for word in msgWords if difflib.get_close_matches(word, validItemWords, cutoff=0.9)]
-                #print("Looking for matches in name: ", msgWords)
 
             foundMatch = False
             i = len(msgWords)
-            if i>=6:
-                i=6
-            #print(i)
-            #if i>10:
-            #print(msgWords)
-            #    input()
+            #limit length of possible permutations
+            if i>=5:
+                i=5
+
             while i>0:
+                #get all permutations of length i
                 perm = itertools.combinations(msgWords, i)
                 for p in perm:
-                    #print(p)
+                    #check if permutation is valid name
                     possName = ' '.join(p)
                     if possName in allItemNames:
-                        #print("Found valid item name:", p)
+                        #found valid name
                         numValidItems += 1
+
+                        #find main name
                         if possName in subNames.keys():
                             currName = subNames[possName]
                         else:
@@ -194,27 +230,22 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
                         
                         msg = (currName, msg[1], msg[2])
                         
+                        #add it to itemCount
                         if currName in itemCount.keys():
                             itemCount[currName].append(tuple(msg))
                         else:
                             itemCount[currName] = [tuple(msg)]
                         foundMatch = True
-                        #if 'shark' in p:
-                        #    input()
                         break
                     else:
-                        #match = difflib.SequenceMatcher(None, msg[0], allItemNames).find_longest_match(0,len(msg[0]), 0, len(allItemNames))
-                        #print("Getting close matches for: ", possName)
+                        #permutation is not a valid name, but check for close matches
                         matches = difflib.get_close_matches(possName, allItemNames, cutoff=0.95)
                         
-                        #if 'shark' in p:
-                        #    input()
                         if matches:
-                            #print("Possible matches: ", matches)
-                            #print("Found valid item name:", p)
-                            #input()
+                            #found valid name
                             numValidItems += 1
 
+                            #find main name
                             if matches[0] in subNames.keys():
                                 currName = subNames[matches[0]]
                             else:
@@ -222,38 +253,45 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
 
                             msg = (currName, msg[1], msg[2])
 
+                            #add it to itemCount
                             if currName in itemCount.keys():
                                 itemCount[currName].append(tuple(msg))
                                 break
                             else:
                                 itemCount[currName] = [tuple(msg)]
                                 break
-                        #print(msg[0])
-                        #print("Looking for: ", msg[0])
-                        #print("Found match: ", msg[0][match.a:match.a + match.size])
-                        #print("Match length: ", match.size)
-                        #print('\n')
                 if foundMatch:
                     break
                 i -= 1
-            #if i == 0:
-                #print("No possible item name found.")
     print('')
-    #print({name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1])})
-    #print("Total names found: ", numValidItems)
     return {name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1], reverse=True)}, numValidItems
 
 
 def extractPrices(itemCount):
+    """
+    Go through each price entry and extract the actual price, accommodating the
+    variance in possible price formats. It is hard to account for some higher
+    priced items, as instead of referring to them in the base amount, they make
+    the assumtion that it is known that the higher value is being referred to
+    (i.e. they may say '3' but actually mean '3,000,000' because it could easily
+    be inferred that they were talking about the higher amount with context).
+    Overall, it is more accurate with lower priced items.
+    
+    This function returns a dict with each item as the key, and the values as
+    a list of that items found prices. 
+    """
     itemPrices = dict()
-    for item in itemCount.keys():
 
+    #loop over each item
+    for item in itemCount.keys():
+        
+        #loop over all the prices found for that item and attempt to extract the price
         for x,price in enumerate(itemCount[item]):
-            #print(price)
-            
+            #if price is a range
             if '-' in price[1]:
                 dashIdx = price[1].index('-')
 
+                #represents the price per item amount
                 if '/' in price[1]:
                     #print(price)
                     slashIdx = price[1].index('/')
@@ -277,7 +315,6 @@ def extractPrices(itemCount):
                         price = (price[0], price[1][:idx], price[2])
 
             numbers = re.findall(r'\d+', price[1])
-            #print("Numbers: ", numbers)
 
             if len(numbers) == 1:
                 #print("Adding price: ", int(numbers[0]))
@@ -300,12 +337,13 @@ def extractPrices(itemCount):
                             itemPrices[price[0], price[2]].append(int(numbers[1])/int(numbers[0]))
                         else:
                             itemPrices[price[0], price[2]] = [int(numbers[1])/int(numbers[0])]
-            #print(itemPrices[price[0], price[2]])
-            #input()
     return itemPrices
 
 
 def calculateAverages(itemPrices, validItemNames):
+    """
+    Remove outliers and calculate the average price for each item.
+    """
     for item in itemPrices:
         if len(itemPrices[item])<3:
             continue
@@ -319,9 +357,6 @@ def calculateAverages(itemPrices, validItemNames):
         #Normalize the data
         normalizedData = [(price-mean)/std for price in itemPrices[item]]
         
-        #print("Starting price list: \t", itemPrices[item])
-        #print("Length: ", len(itemPrices[item]))
-        
         #Get boundaries
         q1, q3 = np.percentile(normalizedData, [20, 90])
 
@@ -334,14 +369,8 @@ def calculateAverages(itemPrices, validItemNames):
 
         # Remove outliers from the original data
         itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
-        #print("Length: ", len(itemPrices[item]))
-        #print("After removing outliers:", itemPrices[item], "\n\n")
-        #input()
     
     averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items()}
-    #for item in itemPrices:
-    #    print(item, '\t', round(np.mean(itemPrices[item]), 2))
-    #print(numItems)
 
     #combining item's buy and sell elements into a single one (I should've done this originally, but now it's too much work)
     combinedItemNames = {}
@@ -366,6 +395,10 @@ def calculateAverages(itemPrices, validItemNames):
 
 
 def processData(discordfile, itemData):
+    """
+    Function to process the given data using a provided discord message log file.
+    """
+
     print("Attempting to find discord file.")
 
     #load in discord message data
@@ -423,37 +456,42 @@ def processData(discordfile, itemData):
     print("Total messages:", len(messages))
 
     print("Searching for valid messages...")
+    #get the valid messages
     validMessages = scalpMessages(messages)
     print("Done.")
 
     print("Total valid price messages:", len(validMessages))
 
     print("Getting valid items...")
+    #get the item names
     allItemNames, subNames, validItemNames = getItemNames(itemData)
     print("Done.")
 
     print("Scraping found items...")
+    #get item data from the valid messages
     itemCount, numItems = analyzeItems(validMessages, allItemNames, subNames, False)
     print("Done.")
 
     print("Number of found pets:", numItems)
 
+    #get the item prices
     itemPrices = extractPrices(itemCount)
 
-    #print("Selling slime prices: ", itemPrices['pet slime', 'sell'])
-    #print("Buying slime prices: ", itemPrices['pet slime', 'buy'])
-    #print(itemPrices)
-
+    #remove outliers and get data averages
     averagePrices = calculateAverages(itemPrices, validItemNames)
 
     return averagePrices, itemPrices, numItems
 
 
 def startAnalysis(itemFile, discordFile):
+    """
+    Loads and runs an analysis on the items in the provided item file.
+    """
     with open(itemFile, 'r') as fp:
         itemData = json.load(fp)
 
     print("Beginning analysis on items in file:", itemFile)
+    #processes the discord file and item data
     itemInformation, itemPrices, numItems = processData(discordFile, itemData)
     print("Analysis complete.")
 
@@ -482,6 +520,7 @@ def startAnalysis(itemFile, discordFile):
             itemInformation[item]['sellPrices'] = 'N/A'
             itemInformation[item]['buyPrices'] = 'N/A'
 
+    #sort items
     sortedItemKeys = sorted(itemInformation, key=lambda x: x)
     itemInformation = {key: itemInformation[key] for key in sortedItemKeys}
 
@@ -489,6 +528,9 @@ def startAnalysis(itemFile, discordFile):
 
 
 def writeToFile(itemInformation, fileName, overwrite):
+    """
+    Outputs information into a CSV file
+    """
     if not overwrite:
         #print("Attempting to remove:", fileName)
         if os.path.isfile(fileName):
@@ -528,9 +570,11 @@ def main():
     discordFile = os.getcwd() + '\\DiscordData\\' + args.discordfile
     newFile = os.getcwd() + '\\PriceData\\' + args.newfile
 
+    #performs analysis and recieves a dict of found information
     itemInformation = startAnalysis(itemFile, discordFile)
 
     print("Writing results to", args.newfile)
+    #writes results to a CSV file
     writeToFile(itemInformation, newFile, args.overwritefile)
     print("Finished.")
 

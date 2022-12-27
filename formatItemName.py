@@ -20,6 +20,9 @@ def checkCLA(args):
                         "\nor use the -o argument to ignore this check.")
 
 def getItemNames(dataFile):
+    """
+    Read in txt file and format information into a dict.
+    """
     try:
         itemDataFile = open(os.getcwd() + "\RawItems\\" + dataFile, "r", encoding="utf8")
     except FileNotFoundError:
