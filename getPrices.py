@@ -173,8 +173,8 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
 
             foundMatch = False
             i = len(msgWords)
-            if i>=4:
-                i=4
+            if i>=6:
+                i=6
             #print(i)
             #if i>10:
             #print(msgWords)
@@ -238,7 +238,7 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
                 i -= 1
             #if i == 0:
                 #print("No possible item name found.")
-    #print('')
+    print('')
     #print({name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1])})
     #print("Total names found: ", numValidItems)
     return {name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1], reverse=True)}, numValidItems
@@ -388,7 +388,7 @@ def processData(discordfile, itemData):
     print("Removing useless messages.")
     #general message cleanup to remove blatently useless ones
     for msg in messages[:]:
-        if msg.count('\n') > 8 or len(msg) > 300:
+        if msg.count('\n') > 5 or len(msg) > 200:
             messages.remove(msg)
             continue
         
