@@ -45,9 +45,6 @@ def scalpMessages(messages):
 
     #scalps data searching for expressions that indicate an item name + price
     for msg in messages:
-        #print("From message:", msg, "\n")
-        #print(msg, flush=True)
-        #input()
         #check for buying or selling (might need to optimize for location in message)
         if "sell" in msg:
             if "buy" in msg:
@@ -67,12 +64,9 @@ def scalpMessages(messages):
             tradeType = ('sell',)
             continue
         
+        #attempt to extract all price information from message
         result = re.findall(r'\b(?!sell|buy|wl|at|go|each|and|[0-9]\b)([a-z,\s,(,),\',:,.,\-]*(?<!at|go|in))\s([0-9]+[\/,-]?[0-9,-,\/]*)\s?(:dl:|dl|wl|:wl:|bgl|:bgl:)?(s)?', msg.lower())
-        #print("Found possible items in result:", result, flush=True)
-        #remove useless characters that might be picked up
-        #result = [(word[0], word[1], word[2].replace(':', '')) for word in result]
-        #result = [(word[0], word[1], word[2].replace(',', '')) for word in result]
-        #result = [(word[0], word[1], word[2].replace('*', '')) for word in result]
+
         for x,word in enumerate(result):
             for character in char_to_remove:
                 result[x] = (result[x][0], result[x][1].replace(character, ''), result[x][2].replace(character, ''))
@@ -80,14 +74,9 @@ def scalpMessages(messages):
         for word in result[:]:
             if not (word[1] or word[2]):
                 result.remove(word)
-        #print("result before combining:", result)
-        #format obtained expression and calculate price of item
+
         result = [(word[0], word[1]+word[2]) for word in result]
         result = [*set(result)]
-        #print("result after combining:", result)
-        #input()
-            #print(result[x])
-            #input()
 
         #remove unnecessary white space
         result = [(word[0].strip(), word[1].strip().replace(' ', '')) for word in result]
@@ -98,10 +87,6 @@ def scalpMessages(messages):
                 #add trade type into data entry in list
                 result[x] = result[x] + tradeType
             validMessages += result
-            #print("Found items in result:", result, "\n")
-        #print("-----------------------------------------------------------------------")
-        #if 'chameleon' in msg:
-            #input()
     return validMessages
 
 
@@ -175,8 +160,7 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
         print("Current msg:", msgNum,"/",len(validMessages), end='\r', flush=True)
         msgNum += 1
 
-        #print(msg)
-        #if people not dumb and spelled item name right, add it as valid item
+        #if item name is valid, add it as valid item
         if msg[0] in allItemNames:
             #found valid item, add it to itemCount
             numValidItems += 1
@@ -293,7 +277,6 @@ def extractPrices(itemCount):
 
                 #represents the price per item amount
                 if '/' in price[1]:
-                    #print(price)
                     slashIdx = price[1].index('/')
 
                     if dashIdx < slashIdx:
@@ -317,7 +300,6 @@ def extractPrices(itemCount):
             numbers = re.findall(r'\d+', price[1])
 
             if len(numbers) == 1:
-                #print("Adding price: ", int(numbers[0]))
                 if (price[0], price[2]) in itemPrices.keys():
                     itemPrices[price[0], price[2]].append(int(numbers[0]))
                 else:
@@ -326,13 +308,11 @@ def extractPrices(itemCount):
                 if '/' in price[1]:
                     idx = price[1].index('/')
                     if int(price[1][idx-1]) == 1:
-                        #print("Adding price: ", int(numbers[1]))
                         if (price[0], price[2]) in itemPrices.keys():
                             itemPrices[price[0], price[2]].append(int(numbers[1]))
                         else:
                             itemPrices[price[0], price[2]] = [int(numbers[1])]
                     else:
-                        #print("Adding price: ", int(numbers[1])/int(numbers[0]))
                         if (price[0], price[2]) in itemPrices.keys():
                             itemPrices[price[0], price[2]].append(int(numbers[1])/int(numbers[0]))
                         else:
@@ -347,27 +327,27 @@ def calculateAverages(itemPrices, validItemNames):
     for item in itemPrices:
         if len(itemPrices[item])<3:
             continue
-        #Calculate the mean and standard deviation
+        #calculate the mean and standard deviation
         mean = np.mean(itemPrices[item])
         std = np.std(itemPrices[item])
 
         if std==0:
             continue
 
-        #Normalize the data
+        #normalize the data
         normalizedData = [(price-mean)/std for price in itemPrices[item]]
         
-        #Get boundaries
+        #get boundaries
         q1, q3 = np.percentile(normalizedData, [20, 90])
 
-        # Calculate the IQR
+        #calculate the IQR
         iqr = q3-q1
 
-        # Calculate the lower and upper bounds
+        #calculate the lower and upper bounds
         lowerBound = q1-(1.5*iqr)
         upperBound = q3+(1.5*iqr)
 
-        # Remove outliers from the original data
+        #remove outliers from the original data
         itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
     
     averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items()}
@@ -444,14 +424,9 @@ def processData(discordfile, itemData):
     #            wordData[word] += 1
     #        else:
     #            wordData[word] = 0
-        #print(msg)
-        #print("-----------------------------------------------")
     
     #wordData = dict(reversed(sorted(wordData.items(), key=lambda x:x[1])))
     #wordData = {word:count for word,count in wordData.items() if count>3}
-    
-    #print(wordData)
-    #print("Results:")
 
     print("Total messages:", len(messages))
 
@@ -495,11 +470,6 @@ def startAnalysis(itemFile, discordFile):
     itemInformation, itemPrices, numItems = processData(discordFile, itemData)
     print("Analysis complete.")
 
-    #print("Found average prices: ")
-    #for name,price in averagePrices.items():
-    #    if price != 'N/A':
-    #        print("It looks like people are  " + name[1] + "ing\t" + name[0] + " for", price, "wls on average (based on the provided data).")
-    
     #combined information into one dictionary
     for item in itemInformation.keys():
         if itemInformation[item]['buy'] != 'N/A':
@@ -532,7 +502,6 @@ def writeToFile(itemInformation, fileName, overwrite):
     Outputs information into a CSV file
     """
     if not overwrite:
-        #print("Attempting to remove:", fileName)
         if os.path.isfile(fileName):
             os.remove(fileName)
 
@@ -548,7 +517,6 @@ def writeToFile(itemInformation, fileName, overwrite):
 
         #populate CSV file
         for name, values in itemInformation.items():
-            #print("trying to write: ", name, values)
             #write key and values
             writer.writerow([name, values['buy'], values['sell'], values['buyPrices'], values['sellPrices']])
             #writer.writerow([name, values['buy'], values['sell']])
