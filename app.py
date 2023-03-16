@@ -1,40 +1,33 @@
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QPushButton, QApplication
 import sys
-from PyQt5.uic import loadUi
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QApplication, QWidget, QMainWindow
+import os
 
-from getPrices import *
-
-class Window(QMainWindow):
+class UI(QMainWindow):
     def __init__(self):
-        super(Window, self).__init__()
-        self.setGeometry(200, 200, 500, 300)
-        self.setWindowTitle("GrowTrends")
-        self.initUi()
+        super(UI,self).__init__()
+        self.initUI()
 
-    def initUi(self):
-        self.label = QtWidgets.QLabel(self)
-        self.label.setText("hola")
-        self.label.move(20, 10)
+    def initUI(self):
+        uic.loadUi("UI//dialogue.ui", self)
 
-        self.b1 = QtWidgets.QPushButton(self)
-        self.b1.setText("Click here to process the pet data")
-        self.b1.move(20, 40)
-        self.b1.clicked.connect(self.clicked)
-    
-    def clicked(self):
-        self.label.setText("pressed!")
-        print("hello")
-        self.update()
-    
-    def update(self):
-        self.label.adjustSize()
+        self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
+        self.discordFileLabel = self.findChild(QLabel, "discordDataFileName")
+
+        self.discordFileButton.clicked.connect(self.getDiscordFile)
+
+
+    def getDiscordFile(self):
+        print("Getting discord file...")
+        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
+        if fileName:
+            self.discordFileLabel.setText(os.path.basename(fileName[0]))
+        self.discordFileLabel.adjustSize()
 
 def window():
     app = QApplication(sys.argv)
-    win = Window()
-
-    win.show()
+    UIWindow = UI()
+    UIWindow.show()
     sys.exit(app.exec_())
 
 window()
