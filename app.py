@@ -12,6 +12,10 @@ class Worker(QObject):
     finished = pyqtSignal()
     #progress = pyqtSignal(int)
 
+    def __init__(self, currUI):
+        QThread.__init__(self)
+        self.currUI = currUI
+
     itemNamesFile = None
     discordFileName = None
 
@@ -22,7 +26,7 @@ class Worker(QObject):
         #    
         #    time.sleep(0.3)
         #    self.changeValue.emit(int)
-        self.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
+        self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
         self.finished.emit()
         return False
 
@@ -38,6 +42,8 @@ class UI(QMainWindow):
         self.itemNamesFile = None
         self.discordFileName = None
         self.workerRunning = False
+        self.itemInformation = None
+        self.savedTextVisible = False
 
         #discord file button
         self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
@@ -92,7 +98,7 @@ class UI(QMainWindow):
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName:
             self.thread = QThread()
-            self.worker = Worker()
+            self.worker = Worker(self)
             self.worker.moveToThread(self.thread)
 
             self.workerRunning = True
@@ -109,9 +115,18 @@ class UI(QMainWindow):
             #self.workerRunning = self.thread.join()
 
     def saveFile(self):
-        name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
-        writeToFile(self.itemInformation, name[0], 1)
-        self.savedText.show()
+        if self.savedTextVisible == True:
+            self.savedText.hide()
+            self.savedTextVisible = True
+        if self.itemInformation is not None:
+            name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
+            if name[0]:
+                writeToFile(self.itemInformation, name[0], 1)
+                self.savedText.show()
+                self.savedTextVisible = True
+            else:
+                self.savedText.hide()
+                self.savedTextVisible = False
 
     #def startProgressBar(self):
         #self.thread = MyThread()
