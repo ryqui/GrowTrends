@@ -1,6 +1,9 @@
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QPushButton, QApplication, QProgressBar
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, 
+                             QFileDialog, QPushButton, QApplication, 
+                             QProgressBar)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QObject
+from PyQt5.QtGui import QFontDatabase, QFont
 
 import time
 import sys
@@ -28,6 +31,7 @@ class Worker(QObject):
         #    self.changeValue.emit(int)
         self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
         self.finished.emit()
+        self.currUI.runningAnalysis = False
         return False
 
 
@@ -44,11 +48,13 @@ class UI(QMainWindow):
         self.workerRunning = False
         self.itemInformation = None
         self.savedTextVisible = False
+        self.runningAnalysis = False
 
         #discord file button
         self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
         self.discordFileLabel = self.findChild(QLabel, "discordDataFileName")
         self.discordFileButton.clicked.connect(self.getDiscordFile)
+        self.discordFileLabel.setFont(QFont("Butler-Black", 8))
 
         #item names file button
         self.itemNamesButton = self.findChild(QPushButton, "selectItemNamesFile")
@@ -96,7 +102,7 @@ class UI(QMainWindow):
         self.rawItemNamesFile = fileName[0]
 
     def runAnalysis(self):
-        if self.itemNamesFile and self.discordFileName:
+        if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
             self.thread = QThread()
             self.worker = Worker(self)
             self.worker.moveToThread(self.thread)
@@ -112,6 +118,7 @@ class UI(QMainWindow):
             self.thread.finished.connect(self.thread.deleteLater)
 
             self.thread.start()
+            self.runningAnalysis = True
             #self.workerRunning = self.thread.join()
 
     def saveFile(self):
