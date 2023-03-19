@@ -201,7 +201,7 @@
      <string>Save Results</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
+   <widget class="QLabel" name="savedText">
     <property name="geometry">
      <rect>
       <x>150</x>

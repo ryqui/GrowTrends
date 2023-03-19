@@ -61,6 +61,8 @@ class UI(QMainWindow):
 
         self.progressBar = self.findChild(QProgressBar, "progressBar")
 
+        self.savedText = self.findChild(QLabel, "savedText")
+        self.savedText.hide()
 
 
     def getDiscordFile(self):
@@ -80,7 +82,7 @@ class UI(QMainWindow):
         self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
-        print("Getting discord file...")
+        print("Getting raw item file...")
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
         if fileName:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
@@ -104,11 +106,12 @@ class UI(QMainWindow):
             self.thread.finished.connect(self.thread.deleteLater)
 
             self.thread.start()
-            self.workerRunning = self.thread.join()
+            #self.workerRunning = self.thread.join()
 
     def saveFile(self):
         name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
         writeToFile(self.itemInformation, name[0], 1)
+        self.savedText.show()
 
     #def startProgressBar(self):
         #self.thread = MyThread()
