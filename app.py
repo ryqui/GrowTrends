@@ -54,7 +54,6 @@ class UI(QMainWindow):
         self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
         self.discordFileLabel = self.findChild(QLabel, "discordDataFileName")
         self.discordFileButton.clicked.connect(self.getDiscordFile)
-        self.discordFileLabel.setFont(QFont("Butler-Black", 8))
 
         #item names file button
         self.itemNamesButton = self.findChild(QPushButton, "selectItemNamesFile")
@@ -82,7 +81,7 @@ class UI(QMainWindow):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
         if fileName:
             self.discordFileLabel.setText(os.path.basename(fileName[0]))
-        self.discordFileLabel.adjustSize()
+        #self.discordFileLabel.adjustSize()
         self.discordFileName = fileName[0]
 
     def getItemNamesFile(self):
@@ -90,7 +89,7 @@ class UI(QMainWindow):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
         if fileName:
             self.itemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        self.itemNamesFileLabel.adjustSize()
+        #self.itemNamesFileLabel.adjustSize()
         self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
@@ -98,7 +97,7 @@ class UI(QMainWindow):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
         if fileName:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        self.rawItemNamesFileLabel.adjustSize()
+        #self.rawItemNamesFileLabel.adjustSize()
         self.rawItemNamesFile = fileName[0]
 
     def runAnalysis(self):
