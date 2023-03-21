@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtGui
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, 
                              QFileDialog, QPushButton, QApplication, 
                              QProgressBar)
@@ -42,6 +42,7 @@ class UI(QMainWindow):
 
     def initUI(self):
         uic.loadUi("UI//dialogue.ui", self)
+        self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
 
         self.itemNamesFile = None
         self.discordFileName = None
