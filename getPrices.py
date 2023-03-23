@@ -326,6 +326,18 @@ def calculateAverages(itemPrices, validItemNames):
     """
     Remove outliers and calculate the average price for each item.
     """
+    for item in itemPrices.keys():
+        itemPrices[item].sort()
+        print(itemPrices[item])
+        total = 0
+        count = 0
+        for price in itemPrices[item]:
+            total += price
+            count += 1
+        print("Average: ", total/count)
+
+    #input()
+    
     for item in itemPrices:
         if len(itemPrices[item])<3:
             continue
@@ -338,8 +350,9 @@ def calculateAverages(itemPrices, validItemNames):
 
         #normalize the data
         normalizedData = [(price-mean)/std for price in itemPrices[item]]
-        
-        #get boundaries
+        #print('\n',normalizedData,'\n')
+        #input()
+        '''#get boundaries
         q1, q3 = np.percentile(normalizedData, [20, 90])
 
         #calculate the IQR
@@ -347,11 +360,42 @@ def calculateAverages(itemPrices, validItemNames):
 
         #calculate the lower and upper bounds
         lowerBound = q1-(1.5*iqr)
-        upperBound = q3+(1.5*iqr)
+        upperBound = q3+(1.5*iqr)'''
+
+        # calculate the median and median absolute deviation of the data
+        median = np.median(normalizedData)
+        print("\n\nArray to calculate mad: ", [abs(data - median) for data in normalizedData])
+        mad = np.median(np.abs(normalizedData - median))
+
+        print("median: ", median)
+        print("mad =", mad)
+
+        # define the threshold as 3 times the median absolute deviation
+        threshold = 1.5
+
+        print("threshold: ", threshold)
+
+        # calculate the modified z-scores for each data point
+        if mad>0:
+            modified_z_scores = 0.6745 * (normalizedData - median) / mad
+        else:
+            modified_z_scores = 0.6745 * (normalizedData - median) / 0.1
+        print("modified_z_scores: ", modified_z_scores)
+
+        print("Uncleaned List:\n",itemPrices[item])
+
+        # remove any data points that have a modified z-score greater than the threshold
+        itemPrices[item] = [x for x, score in zip(itemPrices[item], modified_z_scores) if np.abs(score) <= threshold]
+        
+        # print the outlier removed list
+        print("Cleaned List:\n",itemPrices[item])
+        input()
 
         #remove outliers from the original data
-        itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
-    
+        #itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
+
+    #input()
+
     averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items()}
 
     #combining item's buy and sell elements into a single one (I should've done this originally, but now it's too much work)
@@ -472,7 +516,7 @@ def startAnalysis(itemFile, discordFile):
     itemInformation, itemPrices, numItems = processData(discordFile, itemData)
     print("Analysis complete.")
 
-    #combined information into one dictionary
+    #combine information into one dictionary
     for item in itemInformation.keys():
         if itemInformation[item]['buy'] != 'N/A':
             itemInformation[item]['buyPrices'] = itemPrices[(item, 'buy')]
