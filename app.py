@@ -43,6 +43,7 @@ class UI(QMainWindow):
     def initUI(self):
         uic.loadUi("UI//dialogue.ui", self)
         self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
+        self.window().setFixedSize(400, 265)
 
         self.itemNamesFile = None
         self.discordFileName = None
