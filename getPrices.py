@@ -9,6 +9,8 @@ import difflib
 import numpy as np
 import csv
 
+import UI
+
 #words that we don't want in our messages
 words_to_avoid = ['all', 'some', 'random', ]
 
@@ -497,7 +499,7 @@ def startAnalysis(itemFile, discordFile):
     return itemInformation
 
 
-def writeToFile(itemInformation, fileName, overwrite):
+def writeToFile(itemInformation, fileName, overwrite=0):
     """
     Outputs information into a CSV file
     """
@@ -505,7 +507,7 @@ def writeToFile(itemInformation, fileName, overwrite):
         if os.path.isfile(fileName):
             os.remove(fileName)
 
-    columns = ['Name', 'Buy', 'Sell', 'Found Buy Prices', 'Found Sell Prices']
+    columns = ['Name', 'Average Buy', 'Average Sell', 'Found Buy Prices', 'Found Sell Prices']
 
     with open(fileName, 'w', newline='') as csvfile:
         #create writer

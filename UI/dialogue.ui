@@ -7,21 +7,69 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>275</height>
+    <height>265</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Bahnschrift</family>
+    <weight>50</weight>
+    <bold>false</bold>
+   </font>
   </property>
   <property name="windowTitle">
    <string>GrowTrends</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+	background-color: #444444;
+	border-color: black;
+}
+QPushButton {
+	color: white;
+	border-width: 1px;
+	border-color: green;
+	border-style: solid;
+	border-radius: 10px;
+}
+QPushButton:hover {
+	background-color: green;
+}
+QLabel {
+	color: white;
+}
+QProgressBar {
+	color: white;
+}</string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <widget class="QPushButton" name="selectDiscordDataFile">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>10</y>
-      <width>71</width>
+      <x>30</x>
+      <y>50</y>
+      <width>91</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Select File</string>
@@ -30,83 +78,99 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
+      <x>20</x>
+      <y>20</y>
       <width>111</width>
       <height>21</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>11</pointsize>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
      </font>
     </property>
     <property name="text">
      <string>Discord Data File</string>
     </property>
-   </widget>
-   <widget class="QLabel" name="discordDataFileName">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>11</y>
-      <width>181</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string/>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="itemNamesFileName">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>41</y>
-      <width>181</width>
-      <height>20</height>
+      <x>140</x>
+      <y>69</y>
+      <width>121</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <family>Tonnelier</family>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
      </font>
     </property>
     <property name="text">
      <string/>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>111</width>
+      <x>150</x>
+      <y>20</y>
+      <width>101</width>
       <height>21</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>11</pointsize>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
      </font>
     </property>
     <property name="text">
      <string>Item Names File</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QPushButton" name="selectItemNamesFile">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>40</y>
-      <width>71</width>
+      <x>150</x>
+      <y>50</y>
+      <width>101</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="text">
      <string>Select File</string>
@@ -115,48 +179,73 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>70</y>
+      <x>280</x>
+      <y>20</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
+    </property>
+    <property name="text">
+     <string>Raw Item File</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="rawItemNamesFileName">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>69</y>
       <width>111</width>
       <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>8</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Raw Item Names File
-(optional)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="rawItemNamesFileName">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>71</y>
-      <width>181</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
+      <family>Tonnelier</family>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
      </font>
     </property>
     <property name="text">
      <string/>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QPushButton" name="selectRawItemNamesFile">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>70</y>
-      <width>71</width>
+      <x>280</x>
+      <y>50</y>
+      <width>91</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="text">
      <string>Select File</string>
@@ -167,9 +256,19 @@
      <rect>
       <x>140</x>
       <y>110</y>
-      <width>131</width>
-      <height>51</height>
+      <width>121</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="text">
      <string>Analyze Prices</string>
@@ -179,10 +278,20 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>180</y>
+      <y>170</y>
       <width>371</width>
       <height>23</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="value">
      <number>0</number>
@@ -191,28 +300,82 @@
    <widget class="QPushButton" name="saveResults">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>220</y>
-      <width>91</width>
+      <x>140</x>
+      <y>210</y>
+      <width>131</width>
       <height>23</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="text">
      <string>Save Results</string>
     </property>
    </widget>
+   <widget class="QLabel" name="savedText">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>230</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(80,200,25);</string>
+    </property>
+    <property name="text">
+     <string>Saved Successfully</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="discordDataFileName">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>69</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Tonnelier</family>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <stylestrategy>PreferDefault</stylestrategy>
+      <kerning>true</kerning>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>400</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>
