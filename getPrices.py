@@ -302,12 +302,16 @@ def extractPrices(itemCount):
             numbers = re.findall(r'\d+', price[1])
 
             if len(numbers) == 1:
+                if int(numbers[0]) == 0:
+                    continue
                 if (price[0], price[2]) in itemPrices.keys():
                     itemPrices[price[0], price[2]].append(int(numbers[0]))
                 else:
                     itemPrices[price[0], price[2]] = [int(numbers[0])]
             elif len(numbers) == 2:
                 if '/' in price[1]:
+                    if numbers[1] == 0:
+                        continue
                     idx = price[1].index('/')
                     if int(price[1][idx-1]) == 1:
                         if (price[0], price[2]) in itemPrices.keys():
@@ -371,7 +375,7 @@ def calculateAverages(itemPrices, validItemNames):
         print("mad =", mad)
 
         # define the threshold as 3 times the median absolute deviation
-        threshold = 1.5
+        threshold = 2.5
 
         print("threshold: ", threshold)
 
