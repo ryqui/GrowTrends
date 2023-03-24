@@ -330,18 +330,6 @@ def calculateAverages(itemPrices, validItemNames):
     """
     Remove outliers and calculate the average price for each item.
     """
-    for item in itemPrices.keys():
-        itemPrices[item].sort()
-        print(itemPrices[item])
-        total = 0
-        count = 0
-        for price in itemPrices[item]:
-            total += price
-            count += 1
-        print("Average: ", total/count)
-
-    #input()
-    
     for item in itemPrices:
         if len(itemPrices[item])<3:
             continue
@@ -351,11 +339,8 @@ def calculateAverages(itemPrices, validItemNames):
 
         if std==0:
             continue
-
-        #normalize the data
-        normalizedData = [(price-mean)/std for price in itemPrices[item]]
-        #print('\n',normalizedData,'\n')
-        #input()
+        
+        print(item)
         '''#get boundaries
         q1, q3 = np.percentile(normalizedData, [20, 90])
 
@@ -366,33 +351,47 @@ def calculateAverages(itemPrices, validItemNames):
         lowerBound = q1-(1.5*iqr)
         upperBound = q3+(1.5*iqr)'''
 
+        #normalize the data
+        normalizedData = [(price-mean)/std for price in itemPrices[item]]
+
+        print('\n',normalizedData,'\n')
+        print("mean:", np.mean(itemPrices[item]))
+
         # calculate the median and median absolute deviation of the data
         median = np.median(normalizedData)
-        print("\n\nArray to calculate mad: ", [abs(data - median) for data in normalizedData])
+        print("Array to calculate mad: ", [abs(data - median) for data in normalizedData])
         mad = np.median(np.abs(normalizedData - median))
 
         print("median: ", median)
         print("mad =", mad)
 
         # define the threshold as 3 times the median absolute deviation
-        threshold = 2.5
+        threshold = 8
 
         print("threshold: ", threshold)
 
         # calculate the modified z-scores for each data point
-        if mad>0:
-            modified_z_scores = 0.6745 * (normalizedData - median) / mad
-        else:
-            modified_z_scores = 0.6745 * (normalizedData - median) / 0.1
+        modified_z_scores = 0.8 * (normalizedData - median) / (mad + 0.00001)
         print("modified_z_scores: ", modified_z_scores)
-
-        print("Uncleaned List:\n",itemPrices[item])
 
         # remove any data points that have a modified z-score greater than the threshold
         itemPrices[item] = [x for x, score in zip(itemPrices[item], modified_z_scores) if np.abs(score) <= threshold]
-        
+
+        #calculate new mean
+        mean = np.mean(itemPrices[item])
+
+        #define a valid range of data (to help remove outliers + keep prices consistent)
+        priceRange = 0.85 * mean
+
+        lowerBound = mean - priceRange
+        upperBound = mean + priceRange
+
+        print("Uncleaned List:\n",sorted(itemPrices[item]), sep='')
+
+        itemPrices[item] = [x for x in itemPrices[item] if lowerBound < x < upperBound]
+
         # print the outlier removed list
-        print("Cleaned List:\n",itemPrices[item])
+        print("Cleaned List:\n",sorted(itemPrices[item]), sep='')
         input()
 
         #remove outliers from the original data
