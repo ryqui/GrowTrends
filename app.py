@@ -30,9 +30,8 @@ class Worker(QObject):
         #    time.sleep(0.3)
         #    self.changeValue.emit(int)
         self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
-        self.finished.emit()
         self.currUI.runningAnalysis = False
-        return False
+        self.finished.emit()
 
 
 class UI(QMainWindow):
@@ -136,10 +135,8 @@ class UI(QMainWindow):
                 self.savedText.hide()
                 self.savedTextVisible = False
 
-    #def startProgressBar(self):
-        #self.thread = MyThread()
-        #self.thread.changeValue.connect(self.setProgress)
-        #self.thread.start()
+    #def startProgressBar(self, value):
+        #self.progressBar.setValue(value)
 
     def setProgress(self, val):
         self.progressBar.setValue(val)
