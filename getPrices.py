@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-import pandas as pd
 import json
 import itertools
 import re

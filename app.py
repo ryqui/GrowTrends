@@ -55,8 +55,8 @@ class UI(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        uic.loadUi("UI//dialogue.ui", self)
-        self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
+        uic.loadUi(os.path.join(os.path.dirname(__file__), "UI\\dialogue.ui"), self)
+        #self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
         self.window().setFixedSize(400, 265)
 
         self.itemNamesFile = None
@@ -94,7 +94,6 @@ class UI(QMainWindow):
 
 
     def getDiscordFile(self):
-        print("Getting discord file...")
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
         if fileName:
             self.discordFileLabel.setText(os.path.basename(fileName[0]))
@@ -102,7 +101,6 @@ class UI(QMainWindow):
         self.discordFileName = fileName[0]
 
     def getItemNamesFile(self):
-        print("Getting item file...")
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
         if fileName:
             self.itemNamesFileLabel.setText(os.path.basename(fileName[0]))
@@ -110,7 +108,6 @@ class UI(QMainWindow):
         self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
-        print("Getting raw item file...")
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
         if fileName:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
@@ -135,8 +132,6 @@ class UI(QMainWindow):
 
             self.analysisThread.start()
             self.runningAnalysis = True
-            #self.workerRunning = self.thread.join()
-            #self.setProgress(100)
             self.startProgressBar()
 
     def saveFile(self):
@@ -160,7 +155,8 @@ class UI(QMainWindow):
         self.progressThread.progressSignal.connect(self.setProgress)
 
     def setProgress(self):
-        self.progressBar.setValue(self.progress)
+        if self.progress <= 100:
+            self.progressBar.setValue(self.progress)
 
 def window():
     app = QApplication(sys.argv)
