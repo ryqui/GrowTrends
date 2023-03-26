@@ -11,11 +11,9 @@ import csv
 
 import UI
 
-#words that we don't want in our messages
-words_to_avoid = ['all', 'some', 'random', ]
-
-#characters we want to remove from our messages
-char_to_remove = [':', ' ', '*', ',', '[', ']', '|', '\\']
+words_to_avoid = ['all', 'some', 'random', ] #words that we don't want in our messages
+char_to_remove = [':', ' ', '*', ',', '[', ']', '|', '\\'] #characters we want to remove from our messages
+logAnalysis = True
 
 
 def checkCLA(args):
@@ -45,50 +43,55 @@ def scalpMessages(messages):
     #holds valid messages (ones this program can use)
     validMessages = list()
 
-    #scalps data searching for expressions that indicate an item name + price
-    for msg in messages:
-        #check for buying or selling (might need to optimize for location in message)
-        if "sell" in msg:
-            if "buy" in msg:
-                sellIdx = msg.index("sell")
-                buyIdx = msg.index("buy")
-                tradeType = ('buy',) if buyIdx < sellIdx else ('sell',)
+    try:
+        #scalps data searching for expressions that indicate an item name + price
+        for msg in messages:
+            #check for buying or selling (might need to optimize for location in message)
+            if "sell" in msg:
+                if "buy" in msg:
+                    sellIdx = msg.index("sell")
+                    buyIdx = msg.index("buy")
+                    tradeType = ('buy',) if buyIdx < sellIdx else ('sell',)
+                else:
+                    tradeType = ('sell',)
+            elif "buy" in msg:
+                if "sell" in msg:
+                    sellIdx = msg.index("sell")
+                    buyIdx = msg.index("buy")
+                    tradeType = ('buy',) if buyIdx < sellIdx else ('sell',)
+                else:
+                    tradeType = ('buy',)
             else:
                 tradeType = ('sell',)
-        elif "buy" in msg:
-            if "sell" in msg:
-                sellIdx = msg.index("sell")
-                buyIdx = msg.index("buy")
-                tradeType = ('buy',) if buyIdx < sellIdx else ('sell',)
-            else:
-                tradeType = ('buy',)
-        else:
-            tradeType = ('sell',)
-            continue
-        
-        #attempt to extract all price information from message
-        result = re.findall(r'\b(?!sell|buy|wl|at|go|each|and|[0-9]\b)([a-z,\s,(,),\',:,.,\-]*(?<!at|go|in))\s([0-9]+[\/,-]?[0-9,-,\/]*)\s?(:dl:|dl|wl|:wl:|bgl|:bgl:)?(s)?', msg.lower())
+                continue
+            
+            #attempt to extract all price information from message
+            result = re.findall(r'\b(?!sell|buy|wl|at|go|each|and|[0-9]\b)([a-z,\s,(,),\',:,.,\-]*(?<!at|go|in))\s([0-9]+[\/,-]?[0-9,-,\/]*)\s?(:dl:|dl|wl|:wl:|bgl|:bgl:)?(s)?', msg.lower())
 
-        for x,word in enumerate(result):
-            for character in char_to_remove:
-                result[x] = (result[x][0], result[x][1].replace(character, ''), result[x][2].replace(character, ''))
+            for x,word in enumerate(result):
+                for character in char_to_remove:
+                    result[x] = (result[x][0], result[x][1].replace(character, ''), result[x][2].replace(character, ''))
 
-        for word in result[:]:
-            if not (word[1] or word[2]):
-                result.remove(word)
+            for word in result[:]:
+                if not (word[1] or word[2]):
+                    result.remove(word)
 
-        result = [(word[0], word[1]+word[2]) for word in result]
-        result = [*set(result)]
+            result = [(word[0], word[1]+word[2]) for word in result]
+            result = [*set(result)]
 
-        #remove unnecessary white space
-        result = [(word[0].strip(), word[1].strip().replace(' ', '')) for word in result]
+            #remove unnecessary white space
+            result = [(word[0].strip(), word[1].strip().replace(' ', '')) for word in result]
 
-        #ignore messages that didn't have any matching expressions
-        if result and result[0][0] and result[0][1]:
-            for x,pair in enumerate(result):
-                #add trade type into data entry in list
-                result[x] = result[x] + tradeType
-            validMessages += result
+            #ignore messages that didn't have any matching expressions
+            if result and result[0][0] and result[0][1]:
+                for x,pair in enumerate(result):
+                    #add trade type into data entry in list
+                    result[x] = result[x] + tradeType
+                validMessages += result
+    except Exception:
+        print("There was an error extracting price information. Please make sure the " +
+                "entered \"Discord File\" is in a proper JSON format. Specifically, " +
+                "make sure that it is a file that was obtained by using DiscordChatExporter.")
     return validMessages
 
 
@@ -107,32 +110,37 @@ def getItemNames(itemData):
     #holds all the sub (alternative) names and their equivalent main name
     subNames = dict()
 
-    #set up these structures based on name format
-    for name in itemData.values():
-        #if there is only 1 valid name
-        if len(name) == 1:
-            allItemNames.append(' '.join(name))
-            validItemNames.append(' '.join(name))
-        else:
-            #if there are subnames, add them in starting with actual name
-            for x,value in enumerate(name):
-                #actual item name (main name)
-                if x==0:
-                    allItemNames.append(value)
-                    validItemNames.append(value)
+    try:
+        #set up these structures based on name format
+        for name in itemData.values():
+            #if there is only 1 valid name
+            if len(name) == 1:
+                allItemNames.append(' '.join(name))
+                validItemNames.append(' '.join(name))
+            else:
+                #if there are subnames, add them in starting with actual name
+                for x,value in enumerate(name):
+                    #actual item name (main name)
+                    if x==0:
+                        allItemNames.append(value)
+                        validItemNames.append(value)
 
-                #this name is a subname, so add it to a dict as a value to the
-                #main item key
-                else:
-                    allItemNames.append(value)
-                    #if main item has already been added, append subname
-                    if name[0] in subNames.keys():
-                        subNames[name[x]] += name[0]
-
-                    #if this is the first subname, add it as a key with the
-                    #subname as the value
+                    #this name is a subname, so add it to a dict as a value to the
+                    #main item key
                     else:
-                        subNames[name[x]] = name[0]
+                        allItemNames.append(value)
+                        #if main item has already been added, append subname
+                        if name[0] in subNames.keys():
+                            subNames[name[x]] += name[0]
+
+                        #if this is the first subname, add it as a key with the
+                        #subname as the value
+                        else:
+                            subNames[name[x]] = name[0]
+    except Exception:
+        print("There was an error reading the \"Item Name File.\" Please make sure "+
+                "the items are in a proper JSON format. Specifically, item names that"+
+                "were formatted using the \"Format Item name\" option.")
     return allItemNames, subNames, validItemNames
 
 
@@ -155,12 +163,15 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
     #remove words that are character we want to avoid
     validItemWords = [word for word in validItemWords if word not in char_to_remove]
 
-    #used for printing current message number
-    msgNum = 1
+    if logAnalysis:
+        #used for printing current message number
+        msgNum = 1
+    
     #loop over every valid item and price
     for msg in validMessages:
-        print("Current msg:", msgNum,"/",len(validMessages), end='\r', flush=True)
-        msgNum += 1
+        if logAnalysis:
+            print("Current msg:", msgNum,"/",len(validMessages), end='\r', flush=True)
+            msgNum += 1
 
         #if item name is valid, add it as valid item
         if msg[0] in allItemNames:
@@ -249,7 +260,8 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
                 if foundMatch:
                     break
                 i -= 1
-    print('')
+    if logAnalysis:
+        print('')
     return {name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1], reverse=True)}, numValidItems
 
 
@@ -302,12 +314,16 @@ def extractPrices(itemCount):
             numbers = re.findall(r'\d+', price[1])
 
             if len(numbers) == 1:
+                if int(numbers[0]) == 0:
+                    continue
                 if (price[0], price[2]) in itemPrices.keys():
                     itemPrices[price[0], price[2]].append(int(numbers[0]))
                 else:
                     itemPrices[price[0], price[2]] = [int(numbers[0])]
             elif len(numbers) == 2:
                 if '/' in price[1]:
+                    if numbers[1] == 0:
+                        continue
                     idx = price[1].index('/')
                     if int(price[1][idx-1]) == 1:
                         if (price[0], price[2]) in itemPrices.keys():
@@ -329,30 +345,64 @@ def calculateAverages(itemPrices, validItemNames):
     for item in itemPrices:
         if len(itemPrices[item])<3:
             continue
+        
         #calculate the mean and standard deviation
         mean = np.mean(itemPrices[item])
         std = np.std(itemPrices[item])
 
         if std==0:
             continue
-
+        
         #normalize the data
         normalizedData = [(price-mean)/std for price in itemPrices[item]]
-        
-        #get boundaries
-        q1, q3 = np.percentile(normalizedData, [20, 90])
 
-        #calculate the IQR
-        iqr = q3-q1
+        # calculate the median and median absolute deviation of the data
+        median = np.median(normalizedData)
+        mad = np.median(np.abs(normalizedData - median))
 
-        #calculate the lower and upper bounds
-        lowerBound = q1-(1.5*iqr)
-        upperBound = q3+(1.5*iqr)
+        #log messages
+        if logAnalysis:
+            print('\n',normalizedData,'\n')
+            print("mean:", np.mean(itemPrices[item]))
+            print("median: ", median)
+            print("mad =", mad)
+
+        # define the threshold as 3 times the median absolute deviation
+        threshold = 8
+
+        # calculate the modified z-scores for each data point
+        modified_z_scores = 0.8 * (normalizedData - median) / (mad + 0.00001)
+
+        if logAnalysis:
+            print("modified_z_scores: ", modified_z_scores)
+
+        # remove any data points that have a modified z-score greater than the threshold
+        itemPrices[item] = [x for x, score in zip(itemPrices[item], modified_z_scores) if np.abs(score) <= threshold]
+
+        #calculate new mean
+        mean = np.mean(itemPrices[item])
+
+        #define a valid range of data (to help remove outliers + keep prices consistent)
+        priceRange = 0.85 * mean
+
+        lowerBound = mean - priceRange
+        upperBound = mean + priceRange
+
+        if logAnalysis:
+            print("Uncleaned List:\n",sorted(itemPrices[item]), sep='')
+
+        itemPrices[item] = [x for x in itemPrices[item] if lowerBound < x < upperBound]
+
+        if logAnalysis:
+            # print the outlier removed list
+            print("Cleaned List:\n",sorted(itemPrices[item]), sep='')
+
+        #input()
 
         #remove outliers from the original data
-        itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
-    
-    averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items()}
+        #itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
+
+    averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items() if prices}
 
     #combining item's buy and sell elements into a single one (I should've done this originally, but now it's too much work)
     combinedItemNames = {}
@@ -381,26 +431,31 @@ def processData(discordfile, itemData):
     Function to process the given data using a provided discord message log file.
     """
 
-    print("Attempting to find discord file.")
+    if logAnalysis:
+        print("Attempting to find discord file.")
 
     #load in discord message data
     try:
         rawData = json.load(open(discordfile, encoding="utf8"))
     except Exception as e:
         print(e)
-        exit("Failure to load in data file. Make sure file exists and is in same repository as this program.")
+        if logAnalysis:
+            exit("Failure to load in data file. Make sure file exists and is in same repository as this program.")
 
-    print("Found file.")
+    if logAnalysis:
+        print("Found file.")
 
     #format json for content only and all to be lowercase
     messages = [(rawData['messages'][i]['content']).lower() for i in range(len(rawData['messages']))]
 
-    print("Total messages (unsorted):", len(messages))
+    if logAnalysis:
+        print("Total messages (unsorted):", len(messages))
 
     #remove duplicates (people have a habit of copy pasting a lot)
     messages = [*set(messages)]
 
-    print("Removing useless messages.")
+    if logAnalysis:
+        print("Removing useless messages.")
     #general message cleanup to remove blatently useless ones
     for msg in messages[:]:
         if msg.count('\n') > 5 or len(msg) > 200:
@@ -412,7 +467,8 @@ def processData(discordfile, itemData):
                 messages.remove(msg)
                 break
     
-    print("Done.")
+    if logAnalysis:
+        print("Done.")
 
     #remove newline characters
     for x,msg in enumerate(messages):
@@ -430,26 +486,31 @@ def processData(discordfile, itemData):
     #wordData = dict(reversed(sorted(wordData.items(), key=lambda x:x[1])))
     #wordData = {word:count for word,count in wordData.items() if count>3}
 
-    print("Total messages:", len(messages))
+    if logAnalysis:
+        print("Total messages:", len(messages))
+        print("Searching for valid messages...")
 
-    print("Searching for valid messages...")
     #get the valid messages
     validMessages = scalpMessages(messages)
-    print("Done.")
-
-    print("Total valid price messages:", len(validMessages))
-
-    print("Getting valid items...")
+    
+    if logAnalysis:
+        print("Done.")
+        print("Total valid price messages:", len(validMessages))
+        print("Getting valid items...")
+    
     #get the item names
     allItemNames, subNames, validItemNames = getItemNames(itemData)
-    print("Done.")
+    
+    if logAnalysis:
+        print("Done.")
+        print("Scraping found items...")
 
-    print("Scraping found items...")
     #get item data from the valid messages
     itemCount, numItems = analyzeItems(validMessages, allItemNames, subNames, False)
-    print("Done.")
-
-    print("Number of found pets:", numItems)
+    
+    if logAnalysis:
+        print("Done.")
+        print("Number of found pets:", numItems)
 
     #get the item prices
     itemPrices = extractPrices(itemCount)
@@ -457,22 +518,32 @@ def processData(discordfile, itemData):
     #remove outliers and get data averages
     averagePrices = calculateAverages(itemPrices, validItemNames)
 
+    for item in averagePrices:
+        if averagePrices[item]['buy'] is np.nan:
+            averagePrices[item]['buy'] = "N/A"
+        if averagePrices[item]['sell'] is np.nan:
+            averagePrices[item]['sell'] = "N/A"
+
     return averagePrices, itemPrices, numItems
 
 
-def startAnalysis(itemFile, discordFile):
+def startAnalysis(itemFile, discordFile, UI=None):
     """
     Loads and runs an analysis on the items in the provided item file.
     """
     with open(itemFile, 'r') as fp:
         itemData = json.load(fp)
 
-    print("Beginning analysis on items in file:", itemFile)
+    if logAnalysis:
+        print("Beginning analysis on items in file:", itemFile)
+    
     #processes the discord file and item data
     itemInformation, itemPrices, numItems = processData(discordFile, itemData)
-    print("Analysis complete.")
+    
+    if logAnalysis:
+        print("Analysis complete.")
 
-    #combined information into one dictionary
+    #combine information into one dictionary
     for item in itemInformation.keys():
         if itemInformation[item]['buy'] != 'N/A':
             itemInformation[item]['buyPrices'] = itemPrices[(item, 'buy')]
@@ -495,6 +566,9 @@ def startAnalysis(itemFile, discordFile):
     #sort items
     sortedItemKeys = sorted(itemInformation, key=lambda x: x)
     itemInformation = {key: itemInformation[key] for key in sortedItemKeys}
+
+    if UI:
+        UI.setProgress(100)
 
     return itemInformation
 
