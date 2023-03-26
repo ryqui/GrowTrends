@@ -11,7 +11,7 @@ import os
 
 from getPrices import startAnalysis, writeToFile
 
-class Worker(QObject):
+class AnalysisWorker(QObject):
     finished = pyqtSignal()
     #progress = pyqtSignal(int)
 
@@ -23,15 +23,30 @@ class Worker(QObject):
     discordFileName = None
 
     def run(self):
-        #count = 0
-        #while count<100:
-        #    count += 1
-        #    
-        #    time.sleep(0.3)
-        #    self.changeValue.emit(int)
-        self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
+        self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
         self.currUI.runningAnalysis = False
         self.finished.emit()
+
+class ProgressThread(QThread):
+    progressSignal = pyqtSignal(int)
+    #progress = pyqtSignal(int)
+
+    def __init__(self, currUI):
+        QThread.__init__(self)
+        self.currUI = currUI
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+        currValue = 0
+        while True:
+            if currValue == self.currUI.progress:
+                time.sleep(0.001)
+                continue
+            currValue = self.currUI.progress
+            self.progressSignal.emit(self.currUI.progress)
+            time.sleep(0.01)
 
 
 class UI(QMainWindow):
@@ -50,6 +65,7 @@ class UI(QMainWindow):
         self.itemInformation = None
         self.savedTextVisible = False
         self.runningAnalysis = False
+        self.progress = 0
 
         #discord file button
         self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
@@ -103,23 +119,25 @@ class UI(QMainWindow):
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
-            self.thread = QThread()
-            self.worker = Worker(self)
-            self.worker.moveToThread(self.thread)
+            self.analysisThread = QThread()
+            self.analysisWorker = AnalysisWorker(self)
+            self.analysisWorker.moveToThread(self.analysisThread)
 
             self.workerRunning = True
 
-            self.worker.itemNamesFile = self.itemNamesFile
-            self.worker.discordFileName = self.discordFileName
+            self.analysisWorker.itemNamesFile = self.itemNamesFile
+            self.analysisWorker.discordFileName = self.discordFileName
             
-            self.thread.started.connect(self.worker.run)
-            self.worker.finished.connect(self.thread.quit)
-            self.worker.finished.connect(self.worker.deleteLater)
-            self.thread.finished.connect(self.thread.deleteLater)
+            self.analysisThread.started.connect(self.analysisWorker.run)
+            self.analysisWorker.finished.connect(self.analysisThread.quit)
+            self.analysisWorker.finished.connect(self.analysisWorker.deleteLater)
+            self.analysisThread.finished.connect(self.analysisThread.deleteLater)
 
-            self.thread.start()
+            self.analysisThread.start()
             self.runningAnalysis = True
             #self.workerRunning = self.thread.join()
+            #self.setProgress(100)
+            self.startProgressBar()
 
     def saveFile(self):
         if self.savedTextVisible == True:
@@ -135,12 +153,14 @@ class UI(QMainWindow):
                 self.savedText.hide()
                 self.savedTextVisible = False
 
-    #def startProgressBar(self, value):
-        #self.progressBar.setValue(value)
+    def startProgressBar(self):
+        self.progress = 0
+        self.progressThread = ProgressThread(self)
+        self.progressThread.start()
+        self.progressThread.progressSignal.connect(self.setProgress)
 
-    def setProgress(self, val):
-        self.progressBar.setValue(val)
-
+    def setProgress(self):
+        self.progressBar.setValue(self.progress)
 
 def window():
     app = QApplication(sys.argv)
@@ -148,4 +168,5 @@ def window():
     UIWindow.show()
     sys.exit(app.exec_())
 
-window()
+if __name__ == "__main__":
+    window()
