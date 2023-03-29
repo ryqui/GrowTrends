@@ -543,10 +543,7 @@ def processData(discordfile, itemData):
         #format json for content only and all to be lowercase
         messages = [(rawData['messages'][i]['content']).lower() for i in range(len(rawData['messages']))]
     except:
-        currUI.bottomText.setText("Error: Discord file is not formatted properly.")
-        currUI.bottomText.repaint()
-        currUI.bottomText.show()
-        currUI.bottomText.setStyleSheet("color: red;")
+        currUI.outputMessage("Error: Discord file is not formatted properly.", -1)
         return None, None, None
 
     if logAnalysis:
@@ -649,12 +646,16 @@ def startAnalysis(itemFile, discordFile, appUI=None):
     """
     Loads and runs an analysis on the items in the provided item file.
     """
-    with open(itemFile, 'r') as fp:
-        itemData = json.load(fp)
-
     if appUI:
         global currUI
         currUI = appUI
+    
+    try:
+        with open(itemFile, 'r') as fp:
+            itemData = json.load(fp)
+    except:
+        currUI.outputMessage("Error: Item Name file is not formatted properly.", -1)
+        return
 
     if logAnalysis:
         print("Beginning analysis on items in file:", itemFile)

@@ -13,7 +13,6 @@ from getPrices import startAnalysis, writeToFile
 
 class AnalysisThread(QObject):
     finished = pyqtSignal()
-    #progress = pyqtSignal(int)
 
     def __init__(self, currUI):
         QThread.__init__(self)
@@ -29,7 +28,6 @@ class AnalysisThread(QObject):
 
 class ProgressThread(QThread):
     progressSignal = pyqtSignal(int)
-    #progress = pyqtSignal(int)
 
     def __init__(self, currUI):
         QThread.__init__(self)
@@ -77,48 +75,51 @@ class UI(QMainWindow):
         self.itemNamesFileLabel = self.findChild(QLabel, "itemNamesFileName")
         self.itemNamesButton.clicked.connect(self.getItemNamesFile)
 
+        #raw item name file button
         self.rawItemNamesButton = self.findChild(QPushButton, "selectRawItemNamesFile")
         self.rawItemNamesFileLabel = self.findChild(QLabel, "rawItemNamesFileName")
         self.rawItemNamesButton.clicked.connect(self.getRawItemNamesFile)
 
+        #analyze prices button
         self.analyzePricesButton = self.findChild(QPushButton, "analyzePricesButton")
         self.analyzePricesButton.clicked.connect(self.runAnalysis)
 
+        #save results button
         self.saveResultsButton = self.findChild(QPushButton, "saveResults")
         self.saveResultsButton.clicked.connect(self.saveFile)
 
+        #progress bar
         self.progressBar = self.findChild(QProgressBar, "progressBar")
 
+        #bottom text
         self.bottomText = self.findChild(QLabel, "bottomText")
         self.bottomText.hide()
         self.bottomText.setAlignment(Qt.AlignCenter)
 
     def getDiscordFile(self):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
-        if fileName:
+        if fileName[0]:
             self.discordFileLabel.setText(os.path.basename(fileName[0]))
-        #self.discordFileLabel.adjustSize()
-        self.discordFileName = fileName[0]
+            self.discordFileName = fileName[0]
 
     def getItemNamesFile(self):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
-        if fileName:
+        if fileName[0]:
             self.itemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        #self.itemNamesFileLabel.adjustSize()
-        self.itemNamesFile = fileName[0]
+            self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
-        if fileName:
+        if fileName[0]:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        #self.rawItemNamesFileLabel.adjustSize()
-        self.rawItemNamesFile = fileName[0]
+            self.rawItemNamesFile = fileName[0]
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
             if self.itemInformation:
                 self.itemInformation = None
-            self.bottomText.hide()
+            self.outputMessage("Running analysis...")
+            #self.bottomText.hide()
             self.analysisThread = QThread()
             self.analysisWorker = AnalysisThread(self)
             self.analysisWorker.moveToThread(self.analysisThread)
@@ -130,6 +131,7 @@ class UI(QMainWindow):
             
             self.analysisThread.started.connect(self.analysisWorker.run)
             self.analysisWorker.finished.connect(self.analysisThread.quit)
+            self.analysisWorker.finished.connect(lambda x = "Analysis Finished.": self.outputMessage(x, 1) if self.itemInformation else None)
             self.analysisWorker.finished.connect(self.analysisWorker.deleteLater)
             self.analysisThread.finished.connect(self.analysisThread.deleteLater)
 
@@ -141,17 +143,34 @@ class UI(QMainWindow):
         if self.savedTextVisible == True:
             self.bottomText.hide()
             self.savedTextVisible = True
+
+        #only allow file saving if analysis has been completed successfully
         if self.itemInformation is not None:
             name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
-            self.bottomText.setText("Saved Successfully.")
-            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
             if name[0]:
-                writeToFile(self.itemInformation, name[0], 1)
-                self.bottomText.show()
+                try:
+                    writeToFile(self.itemInformation, name[0], 1)
+                    self.outputMessage("Saved Successfully.", 1)
+                except PermissionError:
+                    self.outputMessage("Unable to save file. File is open in another window.", -1)
+                except:
+                    self.outputMessage("Error saving file.", -1)
+
                 self.savedTextVisible = True
-            else:
-                self.bottomText.hide()
-                self.savedTextVisible = False
+            #else:
+            #    self.bottomText.hide()
+            #    self.savedTextVisible = False
+    
+    def outputMessage(self, message, messageType=0):
+        self.bottomText.setText(message)
+        self.bottomText.repaint()
+        self.bottomText.show()
+        if messageType == -1:
+            self.bottomText.setStyleSheet("color: red;")
+        elif messageType == 0:
+            self.bottomText.setStyleSheet("color: white;")
+        elif messageType == 1:
+            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
 
     def startProgressBar(self):
         self.progress = 0
