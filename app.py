@@ -89,9 +89,9 @@ class UI(QMainWindow):
 
         self.progressBar = self.findChild(QProgressBar, "progressBar")
 
-        self.savedText = self.findChild(QLabel, "savedText")
-        self.savedText.hide()
-
+        self.bottomText = self.findChild(QLabel, "bottomText")
+        self.bottomText.hide()
+        self.bottomText.setAlignment(Qt.AlignCenter)
 
     def getDiscordFile(self):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
@@ -116,7 +116,9 @@ class UI(QMainWindow):
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
-            self.savedText.hide()
+            if self.itemInformation:
+                self.itemInformation = None
+            self.bottomText.hide()
             self.analysisThread = QThread()
             self.analysisWorker = AnalysisThread(self)
             self.analysisWorker.moveToThread(self.analysisThread)
@@ -137,16 +139,18 @@ class UI(QMainWindow):
 
     def saveFile(self):
         if self.savedTextVisible == True:
-            self.savedText.hide()
+            self.bottomText.hide()
             self.savedTextVisible = True
         if self.itemInformation is not None:
             name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
+            self.bottomText.setText("Saved Successfully.")
+            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
             if name[0]:
                 writeToFile(self.itemInformation, name[0], 1)
-                self.savedText.show()
+                self.bottomText.show()
                 self.savedTextVisible = True
             else:
-                self.savedText.hide()
+                self.bottomText.hide()
                 self.savedTextVisible = False
 
     def startProgressBar(self):

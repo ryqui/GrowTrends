@@ -31,6 +31,14 @@ def checkCLA(args):
                         args.newfile+"\", enter a different name, " +
                         "\nor use the -o argument to ignore this check.")
 
+def addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress):
+    #update progress in app.py
+    counter += lenMessagesForProgress
+    if counter>=1:
+        counter = 0
+        progressAdded = progressAdded + 1
+        currUI.progress = currUI.progress + 1
+        time.sleep(0.01)
 
 def scalpMessages(messages):
     """
@@ -46,20 +54,17 @@ def scalpMessages(messages):
     try:
         if currUI:
             counter = 0
+            percentToAdd = 5
+            progressAdded = 0
             try:
-                lenMessagesForProgress = 6/len(messages)
+                lenMessagesForProgress = percentToAdd/len(messages)
             except:
                 lenMessagesForProgress = 0
         
         #scalps data searching for expressions that indicate an item name + price
         for msg in messages:
             if currUI:
-                #update progress in app.py
-                counter += lenMessagesForProgress
-                if counter>=1:
-                    counter = 0
-                    currUI.progress = currUI.progress + 1
-                    time.sleep(0.01)
+                addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
             #check for buying or selling (might need to optimize for location in message)
             if "sell" in msg:
                 if "buy" in msg:
@@ -102,6 +107,12 @@ def scalpMessages(messages):
                     #add trade type into data entry in list
                     result[x] = result[x] + tradeType
                 validMessages += result
+        
+        while progressAdded < percentToAdd and currUI.progress < 100:
+            currUI.progress = currUI.progress + 1
+            progressAdded = progressAdded + 1
+            time.sleep(0.01)
+
     except Exception:
         print("There was an error extracting price information. Please make sure the " +
                 "entered \"Discord File\" is in a proper JSON format. Specifically, " +
@@ -127,20 +138,17 @@ def getItemNames(itemData):
     try:
         if currUI:
             counter = 0
+            percentToAdd = 5
+            progressAdded = 0
             try:
-                lenMessagesForProgress = 6/len(itemData)
+                lenMessagesForProgress = percentToAdd/len(itemData)
             except:
                 lenMessagesForProgress = 0
         
         #set up these structures based on name format
         for name in itemData.values():
             if currUI:
-                #update progress in app.py
-                counter += lenMessagesForProgress
-                if counter>=1:
-                    counter = 0
-                    currUI.progress = currUI.progress + 1
-                    time.sleep(0.01)
+                addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
             #if there is only 1 valid name
             if len(name) == 1:
                 allItemNames.append(' '.join(name))
@@ -165,6 +173,12 @@ def getItemNames(itemData):
                         #subname as the value
                         else:
                             subNames[name[x]] = name[0]
+        
+        while progressAdded < percentToAdd and currUI.progress < 100:
+            currUI.progress = currUI.progress + 1
+            progressAdded = progressAdded + 1
+            time.sleep(0.01)
+
     except Exception:
         print("There was an error reading the \"Item Name File.\" Please make sure "+
                 "the items are in a proper JSON format. Specifically, item names that"+
@@ -197,8 +211,10 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
     
     if currUI:
         counter = 0
+        percentToAdd = 70
+        progressAdded = 0
         try:
-            lenMessagesForProgress = 74/len(validMessages)
+            lenMessagesForProgress = percentToAdd/len(validMessages)
         except:
             lenMessagesForProgress = 0
 
@@ -209,12 +225,7 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
             msgNum += 1
         
         if currUI:
-            #update progress in app.py
-            counter += lenMessagesForProgress
-            if counter>=1:
-                counter = 0
-                currUI.progress = currUI.progress + 1
-                time.sleep(0.01)
+            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
 
         #if item name is valid, add it as valid item
         if msg[0] in allItemNames:
@@ -305,6 +316,12 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
                 i -= 1
     if logAnalysis:
         print('')
+
+    while progressAdded < percentToAdd and currUI.progress < 100:
+        currUI.progress = currUI.progress + 1
+        progressAdded = progressAdded + 1
+        time.sleep(0.01)
+    
     return {name: count for name, count in sorted(itemCount.items(), key=lambda item: item[1], reverse=True)}, numValidItems
 
 
@@ -325,20 +342,17 @@ def extractPrices(itemCount):
 
     if currUI:
         counter = 0
+        percentToAdd = 5
+        progressAdded = 0
         try:
-            lenMessagesForProgress = 4/len(itemCount)
+            lenMessagesForProgress = percentToAdd/len(itemCount)
         except:
             lenMessagesForProgress = 0
 
     #loop over each item
     for item in itemCount.keys():
         if currUI:
-            #update progress in app.py
-            counter += lenMessagesForProgress
-            if counter>=1:
-                counter = 0
-                currUI.progress = currUI.progress + 1
-                time.sleep(0.01)
+            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
         
         #loop over all the prices found for that item and attempt to extract the price
         for x,price in enumerate(itemCount[item]):
@@ -392,6 +406,12 @@ def extractPrices(itemCount):
                             itemPrices[price[0], price[2]].append(int(numbers[1])/int(numbers[0]))
                         else:
                             itemPrices[price[0], price[2]] = [int(numbers[1])/int(numbers[0])]
+    
+    while progressAdded < percentToAdd and currUI.progress < 100:
+        currUI.progress = currUI.progress + 1
+        progressAdded = progressAdded + 1
+        time.sleep(0.01)
+    
     return itemPrices
 
 
@@ -401,19 +421,16 @@ def calculateAverages(itemPrices, validItemNames):
     """
     if currUI:
         counter = 0
+        percentToAdd = 5
+        progressAdded = 0
         try:
-            lenMessagesForProgress = 4/len(itemPrices)
+            lenMessagesForProgress = percentToAdd/len(itemPrices)
         except:
             lenMessagesForProgress = 0
 
     for item in itemPrices:
         if currUI:
-            #update progress in app.py
-            counter += lenMessagesForProgress
-            if counter>=1:
-                counter = 0
-                currUI.progress = currUI.progress + 1
-                time.sleep(0.01)
+            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
 
         if len(itemPrices[item])<3:
             continue
@@ -474,6 +491,11 @@ def calculateAverages(itemPrices, validItemNames):
         #remove outliers from the original data
         #itemPrices[item] = [x for x, y in zip(itemPrices[item], normalizedData) if y >= lowerBound and y <= upperBound]
 
+    while progressAdded < percentToAdd and currUI.progress < 100:
+        currUI.progress = currUI.progress + 1
+        progressAdded = progressAdded + 1
+        time.sleep(0.01)
+    
     averagePrices = {name: round(np.mean(prices), 2) for name,prices in itemPrices.items() if prices}
 
     #combining item's buy and sell elements into a single one (I should've done this originally, but now it's too much work)
@@ -517,8 +539,15 @@ def processData(discordfile, itemData):
     if logAnalysis:
         print("Found file.")
 
-    #format json for content only and all to be lowercase
-    messages = [(rawData['messages'][i]['content']).lower() for i in range(len(rawData['messages']))]
+    try:
+        #format json for content only and all to be lowercase
+        messages = [(rawData['messages'][i]['content']).lower() for i in range(len(rawData['messages']))]
+    except:
+        currUI.bottomText.setText("Error: Discord file is not formatted properly.")
+        currUI.bottomText.repaint()
+        currUI.bottomText.show()
+        currUI.bottomText.setStyleSheet("color: red;")
+        return None, None, None
 
     if logAnalysis:
         print("Total messages (unsorted):", len(messages))
@@ -531,19 +560,17 @@ def processData(discordfile, itemData):
 
     if currUI:
         counter = 0
+        percentToAdd = 5
+        progressAdded = 0
         try:
-            lenMessagesForProgress = 6/len(messages)
+            lenMessagesForProgress = percentToAdd/len(messages)
         except:
             lenMessagesForProgress = 0
 
     #general message cleanup to remove blatently useless ones
     for msg in messages[:]:
         if currUI:
-            counter += lenMessagesForProgress
-            if counter>=1:
-                counter = 0
-                currUI.progress = currUI.progress + 1
-                time.sleep(0.01)
+            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
         if msg.count('\n') > 5 or len(msg) > 200:
             messages.remove(msg)
             continue
@@ -553,14 +580,17 @@ def processData(discordfile, itemData):
                 messages.remove(msg)
                 break
     
+    while progressAdded < percentToAdd and currUI.progress < 100:
+        currUI.progress = currUI.progress + 1
+        progressAdded = progressAdded + 1
+        time.sleep(0.01)
+    
     if logAnalysis:
         print("Done.")
 
     #remove newline characters
     for x,msg in enumerate(messages):
         messages[x] = msg.replace('\n', ' ')
-    if currUI:
-        currUI.progress = currUI.progress + 1
     
     #count up instances of words (most common words)
     #wordData = dict()
@@ -631,25 +661,26 @@ def startAnalysis(itemFile, discordFile, appUI=None):
     
     #processes the discord file and item data
     itemInformation, itemPrices, numItems = processData(discordFile, itemData)
+
+    if not itemInformation:
+        return
     
     if logAnalysis:
         print("Analysis complete.")
 
     if currUI:
         counter = 0
+        percentToAdd = 5
+        progressAdded = 0
         try:
-            lenMessagesForProgress = 6/len(itemInformation.keys())
+            lenMessagesForProgress = percentToAdd/len(itemInformation.keys())
         except:
             lenMessagesForProgress = 0
 
     #combine information into one dictionary
     for item in itemInformation.keys():
         if currUI:
-            counter += lenMessagesForProgress
-            if counter>=1:
-                counter = 0
-                currUI.progress = currUI.progress + 1
-                time.sleep(0.01)
+            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
         
         if itemInformation[item]['buy'] != 'N/A':
             itemInformation[item]['buyPrices'] = itemPrices[(item, 'buy')]
@@ -668,6 +699,11 @@ def startAnalysis(itemFile, discordFile, appUI=None):
         else:
             itemInformation[item]['sellPrices'] = 'N/A'
             itemInformation[item]['buyPrices'] = 'N/A'
+
+    while progressAdded < percentToAdd and currUI.progress < 100:
+        currUI.progress = currUI.progress + 1
+        progressAdded = progressAdded + 1
+        time.sleep(0.01)
 
     #sort items
     sortedItemKeys = sorted(itemInformation, key=lambda x: x)
@@ -699,9 +735,6 @@ def writeToFile(itemInformation, fileName, overwrite=0):
             #write key and values
             writer.writerow([name, values['buy'], values['sell'], values['buyPrices'], values['sellPrices']])
             #writer.writerow([name, values['buy'], values['sell']])
-        
-        if currUI:
-            currUI.progress = currUI.progress + 1
 
 
 def main():

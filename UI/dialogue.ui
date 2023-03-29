@@ -300,9 +300,9 @@ QProgressBar {
    <widget class="QPushButton" name="saveResults">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>130</x>
       <y>210</y>
-      <width>131</width>
+      <width>141</width>
       <height>23</height>
      </rect>
     </property>
@@ -320,12 +320,12 @@ QProgressBar {
      <string>Save Results</string>
     </property>
    </widget>
-   <widget class="QLabel" name="savedText">
+   <widget class="QLabel" name="bottomText">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>0</x>
       <y>230</y>
-      <width>111</width>
+      <width>401</width>
       <height>31</height>
      </rect>
     </property>
