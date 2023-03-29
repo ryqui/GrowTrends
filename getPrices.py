@@ -46,7 +46,10 @@ def scalpMessages(messages):
     try:
         if currUI:
             counter = 0
-            lenMessagesForProgress = 6/len(messages)
+            try:
+                lenMessagesForProgress = 6/len(messages)
+            except:
+                lenMessagesForProgress = 0
         
         #scalps data searching for expressions that indicate an item name + price
         for msg in messages:
@@ -124,7 +127,11 @@ def getItemNames(itemData):
     try:
         if currUI:
             counter = 0
-            lenMessagesForProgress = 6/len(itemData)
+            try:
+                lenMessagesForProgress = 6/len(itemData)
+            except:
+                lenMessagesForProgress = 0
+        
         #set up these structures based on name format
         for name in itemData.values():
             if currUI:
@@ -190,7 +197,10 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
     
     if currUI:
         counter = 0
-        lenMessagesForProgress = 74/len(validMessages)
+        try:
+            lenMessagesForProgress = 74/len(validMessages)
+        except:
+            lenMessagesForProgress = 0
 
     #loop over every valid item and price
     for msg in validMessages:
@@ -315,7 +325,10 @@ def extractPrices(itemCount):
 
     if currUI:
         counter = 0
-        lenMessagesForProgress = 4/len(itemCount)
+        try:
+            lenMessagesForProgress = 4/len(itemCount)
+        except:
+            lenMessagesForProgress = 0
 
     #loop over each item
     for item in itemCount.keys():
@@ -388,7 +401,10 @@ def calculateAverages(itemPrices, validItemNames):
     """
     if currUI:
         counter = 0
-        lenMessagesForProgress = 4/len(itemPrices)
+        try:
+            lenMessagesForProgress = 4/len(itemPrices)
+        except:
+            lenMessagesForProgress = 0
 
     for item in itemPrices:
         if currUI:
@@ -515,7 +531,10 @@ def processData(discordfile, itemData):
 
     if currUI:
         counter = 0
-        lenMessagesForProgress = 6/len(messages)
+        try:
+            lenMessagesForProgress = 6/len(messages)
+        except:
+            lenMessagesForProgress = 0
 
     #general message cleanup to remove blatently useless ones
     for msg in messages[:]:
@@ -618,7 +637,10 @@ def startAnalysis(itemFile, discordFile, appUI=None):
 
     if currUI:
         counter = 0
-        lenMessagesForProgress = 6/len(itemInformation.keys())
+        try:
+            lenMessagesForProgress = 6/len(itemInformation.keys())
+        except:
+            lenMessagesForProgress = 0
 
     #combine information into one dictionary
     for item in itemInformation.keys():
@@ -678,7 +700,8 @@ def writeToFile(itemInformation, fileName, overwrite=0):
             writer.writerow([name, values['buy'], values['sell'], values['buyPrices'], values['sellPrices']])
             #writer.writerow([name, values['buy'], values['sell']])
         
-        self.currUI.progress = self.currUI.progress + 1
+        if currUI:
+            currUI.progress = currUI.progress + 1
 
 
 def main():

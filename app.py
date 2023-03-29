@@ -11,7 +11,7 @@ import os
 
 from getPrices import startAnalysis, writeToFile
 
-class AnalysisWorker(QObject):
+class AnalysisThread(QObject):
     finished = pyqtSignal()
     #progress = pyqtSignal(int)
 
@@ -116,8 +116,9 @@ class UI(QMainWindow):
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
+            self.savedText.hide()
             self.analysisThread = QThread()
-            self.analysisWorker = AnalysisWorker(self)
+            self.analysisWorker = AnalysisThread(self)
             self.analysisWorker.moveToThread(self.analysisThread)
 
             self.workerRunning = True
