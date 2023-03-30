@@ -97,19 +97,19 @@ class UI(QMainWindow):
         self.bottomText.setAlignment(Qt.AlignCenter)
 
     def getDiscordFile(self):
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
+        fileName = QFileDialog.getOpenFileName(self, "Open Discord Data File", "", "JSON file (*.json)")
         if fileName[0]:
             self.discordFileLabel.setText(os.path.basename(fileName[0]))
             self.discordFileName = fileName[0]
 
     def getItemNamesFile(self):
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
+        fileName = QFileDialog.getOpenFileName(self, "Open Item Name File", "", "JSON file (*.json)")
         if fileName[0]:
             self.itemNamesFileLabel.setText(os.path.basename(fileName[0]))
             self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
+        fileName = QFileDialog.getOpenFileName(self, "Open Raw Item Name File", "", "All Files (*.*)")
         if fileName[0]:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
             self.rawItemNamesFile = fileName[0]
