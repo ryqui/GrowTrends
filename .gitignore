@@ -7,3 +7,7 @@ practice.py
 PriceData/
 __pycache__/
 DiscordData/
+build/
+dist/
+*.manifest
+*.spec

@@ -12,9 +12,8 @@ import os
 from getPrices import startAnalysis, writeToFile
 from formatItemName import appendItemNames
 
-class Worker(QObject):
+class AnalysisThread(QObject):
     finished = pyqtSignal()
-    #progress = pyqtSignal(int)
 
     def __init__(self, currUI):
         QThread.__init__(self)
@@ -24,9 +23,28 @@ class Worker(QObject):
     discordFileName = None
 
     def run(self):
-        self.currUI.analysisResults = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
         self.currUI.runningAnalysis = False
         self.finished.emit()
+
+class ProgressThread(QThread):
+    progressSignal = pyqtSignal(int)
+
+    def __init__(self, currUI):
+        QThread.__init__(self)
+        self.currUI = currUI
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+        currValue = 0
+        while True:
+            if currValue == self.currUI.progress:
+                time.sleep(0.001)
+                continue
+            currValue = self.currUI.progress
+            self.progressSignal.emit(self.currUI.progress)
+            time.sleep(0.01)
 
 
 class UI(QMainWindow):
@@ -35,8 +53,8 @@ class UI(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        uic.loadUi("UI//dialogue.ui", self)
-        self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
+        uic.loadUi(os.path.join(os.path.dirname(__file__), "UI\\dialogue.ui"), self)
+        #self.setWindowIcon(QtGui.QIcon('UI/GT_favicon.png'))
         self.window().setFixedSize(400, 265)
 
         self.itemNamesFile = None
@@ -45,6 +63,7 @@ class UI(QMainWindow):
         self.analysisResults = None
         self.savedTextVisible = False
         self.runningAnalysis = False
+        self.progress = 0
 
         #discord file button
         self.discordFileButton = self.findChild(QPushButton, "selectDiscordDataFile")
@@ -56,45 +75,44 @@ class UI(QMainWindow):
         self.itemNamesFileLabel = self.findChild(QLabel, "itemNamesFileName")
         self.itemNamesButton.clicked.connect(self.getItemNamesFile)
 
+        #raw item name file button
         self.rawItemNamesButton = self.findChild(QPushButton, "selectRawItemNamesFile")
         self.rawItemNamesFileLabel = self.findChild(QLabel, "rawItemNamesFileName")
         self.rawItemNamesButton.clicked.connect(self.getRawItemNamesFile)
 
+        #analyze prices button
         self.analyzePricesButton = self.findChild(QPushButton, "analyzePricesButton")
         self.analyzePricesButton.clicked.connect(self.runAnalysis)
 
+        #save results button
         self.saveResultsButton = self.findChild(QPushButton, "saveResults")
         self.saveResultsButton.clicked.connect(self.saveFile)
 
+        #progress bar
         self.progressBar = self.findChild(QProgressBar, "progressBar")
 
-        self.savedText = self.findChild(QLabel, "savedText")
-        self.savedText.hide()
-
+        #bottom text
+        self.bottomText = self.findChild(QLabel, "bottomText")
+        self.bottomText.hide()
+        self.bottomText.setAlignment(Qt.AlignCenter)
 
     def getDiscordFile(self):
-        print("Getting discord file...")
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
-        if fileName:
+        fileName = QFileDialog.getOpenFileName(self, "Open Discord Data File", "", "JSON file (*.json)")
+        if fileName[0]:
             self.discordFileLabel.setText(os.path.basename(fileName[0]))
-        #self.discordFileLabel.adjustSize()
-        self.discordFileName = fileName[0]
+            self.discordFileName = fileName[0]
 
     def getItemNamesFile(self):
-        print("Getting item file...")
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "JSON file (*.json)")
-        if fileName:
+        fileName = QFileDialog.getOpenFileName(self, "Open Item Name File", "", "JSON file (*.json)")
+        if fileName[0]:
             self.itemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        #self.itemNamesFileLabel.adjustSize()
-        self.itemNamesFile = fileName[0]
+            self.itemNamesFile = fileName[0]
     
     def getRawItemNamesFile(self):
-        print("Getting raw item file...")
-        fileName = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*.*)")
-        if fileName:
+        fileName = QFileDialog.getOpenFileName(self, "Open Raw Item Name File", "", "All Files (*.*)")
+        if fileName[0]:
             self.rawItemNamesFileLabel.setText(os.path.basename(fileName[0]))
-        #self.rawItemNamesFileLabel.adjustSize()
-        self.rawItemNamesFile = fileName[0]
+            self.rawItemNamesFile = fileName[0]
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
@@ -113,8 +131,8 @@ class UI(QMainWindow):
 
             self.workerRunning = True
 
-            self.worker.itemNamesFile = self.itemNamesFile
-            self.worker.discordFileName = self.discordFileName
+            self.analysisWorker.itemNamesFile = self.itemNamesFile
+            self.analysisWorker.discordFileName = self.discordFileName
             
             self.analysisThread.started.connect(self.analysisWorker.run)
             self.analysisWorker.finished.connect(self.analysisThread.quit)
@@ -122,9 +140,9 @@ class UI(QMainWindow):
             self.analysisWorker.finished.connect(self.analysisWorker.deleteLater)
             self.analysisThread.finished.connect(self.analysisThread.deleteLater)
 
-            self.thread.start()
+            self.analysisThread.start()
             self.runningAnalysis = True
-            #self.workerRunning = self.thread.join()
+            self.startProgressBar()
 
     def saveFile(self):
         if self.savedTextVisible == True and self.analysisResults:
@@ -143,7 +161,6 @@ class UI(QMainWindow):
                     self.outputMessage("Unable to save file. File is open in another window.", -1)
                 except:
                     self.outputMessage("Error saving file.", -1)
-
                 self.savedTextVisible = True
     
     def outputMessage(self, message, messageType=0):
@@ -160,6 +177,31 @@ class UI(QMainWindow):
     def setProgress(self, val):
         self.progressBar.setValue(val)
 
+                self.savedTextVisible = True
+            #else:
+            #    self.bottomText.hide()
+            #    self.savedTextVisible = False
+    
+    def outputMessage(self, message, messageType=0):
+        self.bottomText.setText(message)
+        self.bottomText.repaint()
+        self.bottomText.show()
+        if messageType == -1:
+            self.bottomText.setStyleSheet("color: red;")
+        elif messageType == 0:
+            self.bottomText.setStyleSheet("color: white;")
+        elif messageType == 1:
+            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
+
+    def startProgressBar(self):
+        self.progress = 0
+        self.progressThread = ProgressThread(self)
+        self.progressThread.start()
+        self.progressThread.progressSignal.connect(self.setProgress)
+
+    def setProgress(self):
+        if self.progress <= 100:
+            self.progressBar.setValue(self.progress)
 
 def window():
     app = QApplication(sys.argv)
@@ -167,4 +209,5 @@ def window():
     UIWindow.show()
     sys.exit(app.exec_())
 
-window()
+if __name__ == "__main__":
+    window()

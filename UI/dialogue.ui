@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>390</width>
     <height>265</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>390</width>
+    <height>265</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>390</width>
+    <height>265</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -47,7 +59,12 @@ QProgressBar {
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true"/>
+    <string notr="true">QPushButton:hover {
+	background-color: green;
+}
+QWidget {
+	background-color: #444444;
+}</string>
    </property>
    <widget class="QPushButton" name="selectDiscordDataFile">
     <property name="geometry">
@@ -279,7 +296,7 @@ QProgressBar {
      <rect>
       <x>10</x>
       <y>170</y>
-      <width>371</width>
+      <width>381</width>
       <height>23</height>
      </rect>
     </property>
@@ -300,9 +317,9 @@ QProgressBar {
    <widget class="QPushButton" name="saveResults">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>130</x>
       <y>210</y>
-      <width>131</width>
+      <width>141</width>
       <height>23</height>
      </rect>
     </property>
@@ -320,12 +337,12 @@ QProgressBar {
      <string>Save Results</string>
     </property>
    </widget>
-   <widget class="QLabel" name="savedText">
+   <widget class="QLabel" name="bottomText">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>0</x>
       <y>230</y>
-      <width>111</width>
+      <width>401</width>
       <height>31</height>
      </rect>
     </property>
@@ -375,6 +392,39 @@ QProgressBar {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QFrame" name="sideBar">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>81</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: #444444;</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <zorder>bottomText</zorder>
+   <zorder>sideBar</zorder>
+   <zorder>rawItemNamesFileName</zorder>
+   <zorder>itemNamesFileName</zorder>
+   <zorder>discordDataFileName</zorder>
+   <zorder>selectDiscordDataFile</zorder>
+   <zorder>label</zorder>
+   <zorder>label_2</zorder>
+   <zorder>selectItemNamesFile</zorder>
+   <zorder>label_3</zorder>
+   <zorder>selectRawItemNamesFile</zorder>
+   <zorder>analyzePricesButton</zorder>
+   <zorder>progressBar</zorder>
+   <zorder>saveResults</zorder>
   </widget>
  </widget>
  <resources/>
