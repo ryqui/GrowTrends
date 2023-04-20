@@ -24,17 +24,7 @@ class Worker(QObject):
     discordFileName = None
 
     def run(self):
-<<<<<<< Updated upstream
-        #count = 0
-        #while count<100:
-        #    count += 1
-        #    
-        #    time.sleep(0.3)
-        #    self.changeValue.emit(int)
-        self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
-=======
         self.currUI.analysisResults = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
->>>>>>> Stashed changes
         self.currUI.runningAnalysis = False
         self.finished.emit()
 
