@@ -649,6 +649,7 @@ def startAnalysis(itemFile, discordFile, appUI=None):
     if appUI:
         global currUI
         currUI = appUI
+        print("Hello")
     
     try:
         with open(itemFile, 'r') as fp:

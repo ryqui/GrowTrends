@@ -23,6 +23,8 @@ class AnalysisThread(QObject):
     discordFileName = None
 
     def run(self):
+        self.currUI.runningAnalysis = True
+        self.currUI.analysisResults = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
         self.currUI.runningAnalysis = False
         self.finished.emit()
 
@@ -59,6 +61,7 @@ class UI(QMainWindow):
 
         self.itemNamesFile = None
         self.discordFileName = None
+        self.rawItemNamesFile = None
         self.workerRunning = False
         self.analysisResults = None
         self.savedTextVisible = False
@@ -118,7 +121,7 @@ class UI(QMainWindow):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
             if self.analysisResults:
                 self.analysisResults = None
-            if self.itemNamesFile:
+            if self.rawItemNamesFile:
                 self.outputMessage("Processing raw item names...")
                 appendItemNames(self.itemNamesFile, self.rawItemNamesFile)
                 time.sleep(10)
@@ -128,7 +131,7 @@ class UI(QMainWindow):
             self.analysisThread = QThread()
             self.analysisWorker = AnalysisThread(self)
             self.analysisWorker.moveToThread(self.analysisThread)
-
+            
             self.workerRunning = True
 
             self.analysisWorker.itemNamesFile = self.itemNamesFile
@@ -176,8 +179,7 @@ class UI(QMainWindow):
 
     def setProgress(self, val):
         self.progressBar.setValue(val)
-
-                self.savedTextVisible = True
+        self.savedTextVisible = True
             #else:
             #    self.bottomText.hide()
             #    self.savedTextVisible = False

@@ -1,6 +1,4 @@
 venv/
-build/
-dist/
 oldAlgorithm.txt
 oldAlgorithm2.txt
 practice.py
