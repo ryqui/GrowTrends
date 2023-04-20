@@ -10,6 +10,7 @@ import sys
 import os
 
 from getPrices import startAnalysis, writeToFile
+from formatItemName import appendItemNames
 
 class Worker(QObject):
     finished = pyqtSignal()
@@ -23,6 +24,7 @@ class Worker(QObject):
     discordFileName = None
 
     def run(self):
+<<<<<<< Updated upstream
         #count = 0
         #while count<100:
         #    count += 1
@@ -30,6 +32,9 @@ class Worker(QObject):
         #    time.sleep(0.3)
         #    self.changeValue.emit(int)
         self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName)
+=======
+        self.currUI.analysisResults = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
+>>>>>>> Stashed changes
         self.currUI.runningAnalysis = False
         self.finished.emit()
 
@@ -47,7 +52,7 @@ class UI(QMainWindow):
         self.itemNamesFile = None
         self.discordFileName = None
         self.workerRunning = False
-        self.itemInformation = None
+        self.analysisResults = None
         self.savedTextVisible = False
         self.runningAnalysis = False
 
@@ -103,37 +108,93 @@ class UI(QMainWindow):
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
+<<<<<<< Updated upstream
             self.thread = QThread()
             self.worker = Worker(self)
             self.worker.moveToThread(self.thread)
+=======
+            if self.analysisResults:
+                self.analysisResults = None
+            if self.itemNamesFile:
+                self.outputMessage("Processing raw item names...")
+                appendItemNames(self.itemNamesFile, self.rawItemNamesFile)
+                time.sleep(10)
+
+            self.outputMessage("Running analysis...")
+            
+            self.analysisThread = QThread()
+            self.analysisWorker = AnalysisThread(self)
+            self.analysisWorker.moveToThread(self.analysisThread)
+>>>>>>> Stashed changes
 
             self.workerRunning = True
 
             self.worker.itemNamesFile = self.itemNamesFile
             self.worker.discordFileName = self.discordFileName
             
+<<<<<<< Updated upstream
             self.thread.started.connect(self.worker.run)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
             self.thread.finished.connect(self.thread.deleteLater)
+=======
+            self.analysisThread.started.connect(self.analysisWorker.run)
+            self.analysisWorker.finished.connect(self.analysisThread.quit)
+            self.analysisWorker.finished.connect(lambda x = "Analysis Finished.": self.outputMessage(x, 1) if self.analysisResults else None)
+            self.analysisWorker.finished.connect(self.analysisWorker.deleteLater)
+            self.analysisThread.finished.connect(self.analysisThread.deleteLater)
+>>>>>>> Stashed changes
 
             self.thread.start()
             self.runningAnalysis = True
             #self.workerRunning = self.thread.join()
 
     def saveFile(self):
+<<<<<<< Updated upstream
         if self.savedTextVisible == True:
             self.savedText.hide()
             self.savedTextVisible = True
         if self.itemInformation is not None:
+=======
+        if self.savedTextVisible == True and self.analysisResults:
+            self.bottomText.hide()
+            self.savedTextVisible = True
+
+        #only allow file saving if analysis has been completed successfully
+        if self.analysisResults is not None:
+>>>>>>> Stashed changes
             name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
+            
             if name[0]:
+<<<<<<< Updated upstream
                 writeToFile(self.itemInformation, name[0], 1)
                 self.savedText.show()
                 self.savedTextVisible = True
             else:
                 self.savedText.hide()
                 self.savedTextVisible = False
+=======
+                try:
+                    writeToFile(self.analysisResults, name[0], 1)
+                    self.outputMessage("Saved Successfully.", 1)
+                except PermissionError:
+                    self.outputMessage("Unable to save file. File is open in another window.", -1)
+                except:
+                    self.outputMessage("Error saving file.", -1)
+
+                self.savedTextVisible = True
+    
+    def outputMessage(self, message, messageType=0):
+        self.bottomText.setText(message)
+        self.bottomText.repaint()
+        self.bottomText.show()
+        if messageType == -1:
+            self.bottomText.setStyleSheet("color: red;")
+        elif messageType == 0:
+            self.bottomText.setStyleSheet("color: white;")
+        elif messageType == 1:
+            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
+>>>>>>> Stashed changes
 
     #def startProgressBar(self, value):
         #self.progressBar.setValue(value)
