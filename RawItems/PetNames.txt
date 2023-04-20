@@ -381,6 +381,11 @@ T
     Toucan's Bill
     Toy Lock-Bot
     Tumbleweed Attractor
+    Toad King Pet
+    |Toad King
+    |Toad
+    |King Toad
+    |TKP
 U
     Unearthly Synthoid
     Unicorn Garland
