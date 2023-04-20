@@ -19,12 +19,28 @@ def checkCLA(args):
                         fileName+"\", enter a different name, " +
                         "\nor use the -o argument to ignore this check.")
 
+def appendItemNames(mainItemFile, rawItemDataFile, appUI=None):
+    data = getItemNames(rawItemDataFile)
+    
+    try:
+        with open(mainItemFile, "r") as f:
+            oldNames = json.load(f)
+    except Exception():
+        if appUI:
+            appUI.outputMessage("Error reading in raw item names.")
+        else:
+            exit("Error reading in raw item names.")
+    
+    data.update(oldNames)
+    print(data)
+
+
 def getItemNames(dataFile):
     """
     Read in txt file and format information into a dict.
     """
     try:
-        itemDataFile = open(os.getcwd() + "\RawItems\\" + dataFile, "r", encoding="utf8")
+        itemDataFile = open(dataFile, "r", encoding="utf8")
     except FileNotFoundError:
         exit("Error opening raw data file. Please check that it exists within the \RawItems directory.")
     

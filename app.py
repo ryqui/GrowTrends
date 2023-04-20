@@ -10,6 +10,7 @@ import sys
 import os
 
 from getPrices import startAnalysis, writeToFile
+from formatItemName import appendItemNames
 
 class AnalysisThread(QObject):
     finished = pyqtSignal()
@@ -22,7 +23,6 @@ class AnalysisThread(QObject):
     discordFileName = None
 
     def run(self):
-        self.currUI.itemInformation = startAnalysis(self.itemNamesFile, self.discordFileName, self.currUI)
         self.currUI.runningAnalysis = False
         self.finished.emit()
 
@@ -60,7 +60,7 @@ class UI(QMainWindow):
         self.itemNamesFile = None
         self.discordFileName = None
         self.workerRunning = False
-        self.itemInformation = None
+        self.analysisResults = None
         self.savedTextVisible = False
         self.runningAnalysis = False
         self.progress = 0
@@ -116,10 +116,15 @@ class UI(QMainWindow):
 
     def runAnalysis(self):
         if self.itemNamesFile and self.discordFileName and not self.runningAnalysis:
-            if self.itemInformation:
-                self.itemInformation = None
+            if self.analysisResults:
+                self.analysisResults = None
+            if self.itemNamesFile:
+                self.outputMessage("Processing raw item names...")
+                appendItemNames(self.itemNamesFile, self.rawItemNamesFile)
+                time.sleep(10)
+
             self.outputMessage("Running analysis...")
-            #self.bottomText.hide()
+            
             self.analysisThread = QThread()
             self.analysisWorker = AnalysisThread(self)
             self.analysisWorker.moveToThread(self.analysisThread)
@@ -131,7 +136,7 @@ class UI(QMainWindow):
             
             self.analysisThread.started.connect(self.analysisWorker.run)
             self.analysisWorker.finished.connect(self.analysisThread.quit)
-            self.analysisWorker.finished.connect(lambda x = "Analysis Finished.": self.outputMessage(x, 1) if self.itemInformation else None)
+            self.analysisWorker.finished.connect(lambda x = "Analysis Finished.": self.outputMessage(x, 1) if self.analysisResults else None)
             self.analysisWorker.finished.connect(self.analysisWorker.deleteLater)
             self.analysisThread.finished.connect(self.analysisThread.deleteLater)
 
@@ -140,21 +145,37 @@ class UI(QMainWindow):
             self.startProgressBar()
 
     def saveFile(self):
-        if self.savedTextVisible == True:
+        if self.savedTextVisible == True and self.analysisResults:
             self.bottomText.hide()
             self.savedTextVisible = True
 
         #only allow file saving if analysis has been completed successfully
-        if self.itemInformation is not None:
+        if self.analysisResults is not None:
             name = QFileDialog.getSaveFileName(self, "Save File", "", "CSV Files (*.csv)")
+            
             if name[0]:
                 try:
-                    writeToFile(self.itemInformation, name[0], 1)
+                    writeToFile(self.analysisResults, name[0], 1)
                     self.outputMessage("Saved Successfully.", 1)
                 except PermissionError:
                     self.outputMessage("Unable to save file. File is open in another window.", -1)
                 except:
                     self.outputMessage("Error saving file.", -1)
+                self.savedTextVisible = True
+    
+    def outputMessage(self, message, messageType=0):
+        self.bottomText.setText(message)
+        self.bottomText.repaint()
+        self.bottomText.show()
+        if messageType == -1:
+            self.bottomText.setStyleSheet("color: red;")
+        elif messageType == 0:
+            self.bottomText.setStyleSheet("color: white;")
+        elif messageType == 1:
+            self.bottomText.setStyleSheet("color: rgb(80,200,25);")
+
+    def setProgress(self, val):
+        self.progressBar.setValue(val)
 
                 self.savedTextVisible = True
             #else:
