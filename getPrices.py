@@ -13,7 +13,7 @@ import UI
 
 words_to_avoid = ['all', 'some', 'random', ] #words that we don't want in our messages
 char_to_remove = [':', ' ', '*', ',', '[', ']', '|', '\\'] #characters we want to remove from our messages
-logAnalysis = False
+logAnalysis = True
 
 
 def checkCLA(args):
@@ -31,14 +31,6 @@ def checkCLA(args):
                         args.newfile+"\", enter a different name, " +
                         "\nor use the -o argument to ignore this check.")
 
-def addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress):
-    #update progress in app.py
-    counter += lenMessagesForProgress
-    if counter>=1:
-        counter = 0
-        progressAdded = progressAdded + 1
-        currUI.progress = currUI.progress + 1
-        time.sleep(0.01)
 
 def scalpMessages(messages):
     """
@@ -54,7 +46,7 @@ def scalpMessages(messages):
     try:
         if currUI:
             counter = 0
-            percentToAdd = 5
+            percentToAdd = 20
             progressAdded = 0
             try:
                 lenMessagesForProgress = percentToAdd/len(messages)
@@ -64,7 +56,12 @@ def scalpMessages(messages):
         #scalps data searching for expressions that indicate an item name + price
         for msg in messages:
             if currUI:
-                addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
+                counter += lenMessagesForProgress
+                if counter>=1:
+                    counter = 0
+                    progressAdded = progressAdded + 1
+                    currUI.progress = currUI.progress + 1
+                    time.sleep(0.01)
             #check for buying or selling (might need to optimize for location in message)
             if "sell" in msg:
                 if "buy" in msg:
@@ -85,8 +82,8 @@ def scalpMessages(messages):
                 continue
             
             #attempt to extract all price information from message
-            result = re.findall(r'\b(?!sell|buy|wl|at|go|each|and|[0-9]\b)([a-z,\s,(,),\',:,.,\-]*(?<!at|go|in))\s([0-9]+[\/,-]?[0-9,-,\/]*)\s?(:dl:|dl|wl|:wl:|bgl|:bgl:)?(s)?', msg.lower())
-
+            result = re.findall(r'(?!\r\n|\r|\n)\b(?!sell|buy|wl|at|go|each|and|[0-9]| \b)([a-z,\s,(,),\',:,.,\-]*(?<!at|go|in))\s([0-9]+[\/,-]?[0-9,-,\/]*) ?(:?[w|d|b]ls?:?)?(s)?(.*?(\r\n|\r|\n))?', msg.lower())
+            
             for x,word in enumerate(result):
                 for character in char_to_remove:
                     result[x] = (result[x][0], result[x][1].replace(character, ''), result[x][2].replace(character, ''))
@@ -138,7 +135,7 @@ def getItemNames(itemData):
     try:
         if currUI:
             counter = 0
-            percentToAdd = 5
+            percentToAdd = 10
             progressAdded = 0
             try:
                 lenMessagesForProgress = percentToAdd/len(itemData)
@@ -148,7 +145,12 @@ def getItemNames(itemData):
         #set up these structures based on name format
         for name in itemData.values():
             if currUI:
-                addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
+                counter += lenMessagesForProgress
+                if counter>=1:
+                    counter = 0
+                    progressAdded = progressAdded + 1
+                    currUI.progress = currUI.progress + 1
+                    time.sleep(0.01)
             #if there is only 1 valid name
             if len(name) == 1:
                 allItemNames.append(' '.join(name))
@@ -211,7 +213,7 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
     
     if currUI:
         counter = 0
-        percentToAdd = 70
+        percentToAdd = 50
         progressAdded = 0
         try:
             lenMessagesForProgress = percentToAdd/len(validMessages)
@@ -220,12 +222,17 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
 
     #loop over every valid item and price
     for msg in validMessages:
+        if currUI:
+            counter += lenMessagesForProgress
+            if counter>=1:
+                counter = 0
+                progressAdded = progressAdded + 1
+                currUI.progress = currUI.progress + 1
+                time.sleep(0.01)
+        
         if logAnalysis:
             print("Current msg:", msgNum,"/",len(validMessages), end='\r', flush=True)
             msgNum += 1
-        
-        if currUI:
-            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
 
         #if item name is valid, add it as valid item
         if msg[0] in allItemNames:
@@ -260,7 +267,9 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
             foundMatch = False
             i = len(msgWords)
             #limit length of possible permutations
-            if i>=5:
+            if i>8:
+                continue
+            elif i>=5:
                 i=5
 
             while i>0:
@@ -314,6 +323,7 @@ def analyzeItems(validMessages, allItemNames, subNames, checkOnlyValid):
                 if foundMatch:
                     break
                 i -= 1
+
     if logAnalysis:
         print('')
 
@@ -352,7 +362,12 @@ def extractPrices(itemCount):
     #loop over each item
     for item in itemCount.keys():
         if currUI:
-            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
+            counter += lenMessagesForProgress
+            if counter>=1:
+                counter = 0
+                progressAdded = progressAdded + 1
+                currUI.progress = currUI.progress + 1
+                time.sleep(0.01)
         
         #loop over all the prices found for that item and attempt to extract the price
         for x,price in enumerate(itemCount[item]):
@@ -430,7 +445,12 @@ def calculateAverages(itemPrices, validItemNames):
 
     for item in itemPrices:
         if currUI:
-            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
+            counter += lenMessagesForProgress
+            if counter>=1:
+                counter = 0
+                progressAdded = progressAdded + 1
+                currUI.progress = currUI.progress + 1
+                time.sleep(0.01)
 
         if len(itemPrices[item])<3:
             continue
@@ -549,7 +569,7 @@ def processData(discordfile, itemData):
     if logAnalysis:
         print("Total messages (unsorted):", len(messages))
 
-    #remove duplicates (people have a habit of copy pasting a lot)
+    #remove duplicates (people have a habit of copy-pasting a lot)
     messages = [*set(messages)]
 
     if logAnalysis:
@@ -567,8 +587,14 @@ def processData(discordfile, itemData):
     #general message cleanup to remove blatently useless ones
     for msg in messages[:]:
         if currUI:
-            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
-        if msg.count('\n') > 5 or len(msg) > 200:
+            counter += lenMessagesForProgress
+            if counter>=1:
+                counter = 0
+                progressAdded = progressAdded + 1
+                currUI.progress = currUI.progress + 1
+                time.sleep(0.01)
+
+        if len(msg) > 850:
             messages.remove(msg)
             continue
         
@@ -576,7 +602,8 @@ def processData(discordfile, itemData):
             if word in words_to_avoid:
                 messages.remove(msg)
                 break
-    
+        
+
     while progressAdded < percentToAdd and currUI.progress < 100:
         currUI.progress = currUI.progress + 1
         progressAdded = progressAdded + 1
@@ -649,7 +676,6 @@ def startAnalysis(itemFile, discordFile, appUI=None):
     if appUI:
         global currUI
         currUI = appUI
-        print("Hello")
     
     try:
         with open(itemFile, 'r') as fp:
@@ -682,7 +708,12 @@ def startAnalysis(itemFile, discordFile, appUI=None):
     #combine information into one dictionary
     for item in itemInformation.keys():
         if currUI:
-            addProgress(counter, percentToAdd, progressAdded, lenMessagesForProgress)
+            counter += lenMessagesForProgress
+            if counter>=1:
+                counter = 0
+                progressAdded = progressAdded + 1
+                currUI.progress = currUI.progress + 1
+                time.sleep(0.01)
         
         if itemInformation[item]['buy'] != 'N/A':
             itemInformation[item]['buyPrices'] = itemPrices[(item, 'buy')]
